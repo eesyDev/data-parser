@@ -26,7 +26,7 @@ COMMON_ATTRS = [
 CATEGORY_ATTRS = {
     "Bucket Tooth": ["Tooth Style", "Tooth Pin Part Number", "Serie"],
     "Bucket Pin": ["Diameter (mm)", "Length (mm)"],
-    "Bucket Shims": ["Dimensions (mm)"],
+    "Bucket Shims": ["Outer Diameter", "Interior Diameter", "Thickness"],
     "Auger Bits": ["Hex Size"],
     "Hydraulic Hammer": ["Energy Class (J)"],
 }
@@ -232,9 +232,24 @@ def build_grid():
 
             rows.append(row)
 
+        df = pd.DataFrame(rows)
+
+        # Drop attribute columns where ALL 4 value sub-columns are empty across every row
+        non_empty_attrs = []
+        for attr in all_attr_names:
+            has_data = any(
+                df[f"{attr} {suffix}"].apply(
+                    lambda x: bool(str(x).strip()) and str(x) not in ("", "nan")
+                ).any()
+                for suffix in ["[Name]", "[Zoho]", "[Web]", "[Google]"]
+                if f"{attr} {suffix}" in df.columns
+            )
+            if has_data:
+                non_empty_attrs.append(attr)
+
         grids[cat] = {
-            "data": pd.DataFrame(rows),
-            "attr_names": all_attr_names,
+            "data": df,
+            "attr_names": non_empty_attrs,
         }
 
     return grids
@@ -324,6 +339,9 @@ def _find_source_value(attrs, attr_name):
         "Category": ["Bucket Type"],
         "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
         "Product Weight (kg)": ["Weight (kg)", "Rake Weight (kg)"],
+        "Outer Diameter": ["Outer Diameter (mm)/Filter", "Outer Diameter (mm)"],
+        "Interior Diameter": ["Interior Diameter (mm)/Filter", "Interior Diameter (mm)"],
+        "Thickness": ["Height (mm)/Filter", "Height (mm)", "Thickness (mm)"],
     }
     for alias in aliases.get(attr_name, []):
         if alias in attrs:
@@ -379,9 +397,9 @@ def generate_grid_html(grids, output_path=None):
   body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.4; padding: 20px;
-    font-size: 13px;
+    font-size: 13px; overflow-x: hidden;
   }}
-  .container {{ max-width: 100%; margin: 0 auto; }}
+  .container {{ max-width: 100%; margin: 0 auto; overflow-x: hidden; }}
   h1 {{ font-size: 1.5rem; margin-bottom: 4px; }}
   .subtitle {{ color: var(--muted); margin-bottom: 16px; }}
   .stats {{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }}
@@ -417,12 +435,12 @@ def generate_grid_html(grids, output_path=None):
   /* Grid table */
   .grid-wrap {{
     background:var(--card); border:1px solid var(--border); border-radius:10px;
-    overflow:hidden;
+    overflow:hidden; max-width: calc(100vw - 40px);
   }}
   .grid-scroll {{ overflow-x:auto; max-height:600px; overflow-y:auto; }}
   table {{ border-collapse:separate; border-spacing:0; font-size:0.78rem; white-space:nowrap; }}
   th {{
-    background:rgba(0,0,0,0.3); padding:6px 8px; text-align:left;
+    background:#0d1a2e; padding:6px 8px; text-align:left;
     font-weight:600; color:var(--muted); text-transform:uppercase; font-size:0.7rem;
     letter-spacing:0.03em; border-bottom:1px solid var(--border);
     position:sticky; top:0; z-index:10;
@@ -430,16 +448,16 @@ def generate_grid_html(grids, output_path=None):
   td {{ padding:5px 8px; border-bottom:1px solid rgba(51,65,85,0.5); }}
   tr:hover {{ background:rgba(255,255,255,0.03); }}
 
-  /* Sticky left columns: SKU, Zoho Name, Zoho Title, Website Name, Google Name */
+  /* Sticky left columns */
   .sticky-col {{ position:sticky; z-index:5; background:var(--card); }}
   .sticky-col-0 {{ left:0; min-width:80px; }}
   .sticky-col-1 {{ left:80px; min-width:180px; border-right:1px solid var(--border); }}
-  th.sticky-col {{ z-index:15; background:rgba(15,23,42,0.97); }}
+  th.sticky-col {{ z-index:15; background:#0d1a2e; }}
   tr:hover .sticky-col {{ background:#253349; }}
 
   /* Attribute group headers */
   th.attr-group {{
-    background:rgba(59,130,246,0.1); color:var(--accent);
+    background:#162035; color:var(--accent);
     text-align:center; border-left:2px solid var(--accent);
     font-size:0.7rem;
   }}
@@ -506,10 +524,10 @@ def generate_grid_html(grids, output_path=None):
       <div class="num" style="color:var(--orange)">{total_partial}</div>
       <div class="label">Partial (only 1 source)</div>
     </div>
-    <div class="stat" style="display:flex;align-items:center;gap:8px;">
-      <button class="filter-btn" onclick="toggleGlobalMismatch(this)" style="font-size:1rem;padding:10px 20px;">Show Mismatches Only</button>
-      <button class="filter-btn" onclick="expandAll()" style="padding:10px 16px;">Expand All</button>
-      <button class="filter-btn" onclick="collapseAll()" style="padding:10px 16px;">Collapse All</button>
+    <div class="stat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <button class="filter-btn" onclick="toggleGlobalMismatch(this)">Mismatches Only</button>
+      <button class="filter-btn" onclick="expandAll()">Expand All</button>
+      <button class="filter-btn" onclick="collapseAll()">Collapse All</button>
     </div>
   </div>
 
@@ -519,7 +537,7 @@ def generate_grid_html(grids, output_path=None):
     for cat in cat_list:
         cnt = len(grids[cat]["data"])
         safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
-        html += f'    <a class="cat-btn" href="#{safe_id}">{_esc(cat)}<span class="cnt">{cnt}</span></a>\n'
+        html += f'    <a class="cat-btn" href="#{safe_id}" onclick="expandCat(\'{safe_id}\')">{_esc(cat)}<span class="cnt">{cnt}</span></a>\n'
 
     html += '  </div>\n'
 
@@ -658,6 +676,15 @@ function toggleCat(catId) {
   const toggle = section.querySelector('.toggle');
   section.classList.toggle('expanded');
   toggle.textContent = section.classList.contains('expanded') ? '▼ collapse' : '▶ expand';
+}
+
+function expandCat(catId) {
+  const section = document.getElementById(catId);
+  if (!section.classList.contains('expanded')) {
+    section.classList.add('expanded');
+    const t = section.querySelector('.toggle');
+    if (t) t.textContent = '▼ collapse';
+  }
 }
 
 function expandAll() {

@@ -54,7 +54,7 @@ def parse_name(title, category=""):
     # "for 3 - 4.5 Tons Mini Excavators", "for 16 – 25 Tons Excavators"
     # Also handle en-dash (–), em-dash (—)
     m_weight = re.search(
-        r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s*(Mini\s+)?(\w+)',
+        r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s+(Mini\s+)?(\w+)',
         title
     )
     if m_weight:
@@ -65,6 +65,21 @@ def parse_name(title, category=""):
             attrs["Machine Type"] = f"Mini {machine}"
         else:
             attrs["Machine Type"] = machine
+
+    # --- Machine Type (without weight range) ---
+    # "for Backhoe Loaders", "for Wheel Loaders", "for Skid Steers", etc.
+    if "Machine Type" not in attrs:
+        machine_patterns = [
+            (r'(?i)for\s+Mini\s+Excavators?', "Mini Excavators"),
+            (r'(?i)for\s+Backhoe\s+Loaders?', "Backhoe"),
+            (r'(?i)for\s+Wheel\s+Loaders?', "Wheel Loader"),
+            (r'(?i)for\s+Skid\s+Steers?', "Skid Steer"),
+            (r'(?i)for\s+Excavators?', "Excavators"),
+        ]
+        for pattern, machine_name in machine_patterns:
+            if re.search(pattern, title):
+                attrs["Machine Type"] = machine_name
+                break
 
     # --- Coupler Type ---
     coupler_patterns = [
@@ -144,9 +159,13 @@ def parse_name(title, category=""):
         attrs["Hex Size"] = f'{m_hex.group(1)}"'
 
     # --- Shim dimensions ---
+    # Title format: "90 x 160 x 5 mm ..." → first = Interior (pin hole), second = Outer, third = Thickness
+    # Note: Zoho has these labels swapped; Google/Website have them correct.
     m_shim = re.match(r'^(\d+)\s*x\s*(\d+)\s*x\s*(\d+)\s*mm', title)
     if m_shim:
-        attrs["Dimensions (mm)"] = f"{m_shim.group(1)} x {m_shim.group(2)} x {m_shim.group(3)} mm"
+        attrs["Interior Diameter"] = f"{m_shim.group(1)} mm"
+        attrs["Outer Diameter"] = f"{m_shim.group(2)} mm"
+        attrs["Thickness"] = f"{m_shim.group(3)} mm"
 
     # --- Bucket Pin length ---
     m_pin_len = re.search(r'with\s+(\d+)\s*mm\s+[Ll]ength', title)
