@@ -19,7 +19,7 @@ COMMON_ATTRS = [
     "Pin Size",
     "Carrier Weight Class",
     "Machine Type",
-    "Coupler Type",
+    "Head Style",
 ]
 
 # Category-specific extra attributes
@@ -29,6 +29,9 @@ CATEGORY_ATTRS = {
     "Bucket Shims": ["Outer Diameter", "Interior Diameter", "Thickness"],
     "Auger Bits": ["Hex Size"],
     "Hydraulic Hammer": ["Energy Class (J)"],
+    "Hammer Chisel Bits": ["Diameter (mm)"],
+    "Hammer Moil Chisel Bits": ["Diameter (mm)"],
+    "Hammer Wedge Chisel Bits": ["Diameter (mm)"],
 }
 
 # Categories where "Bucket Size" doesn't apply
@@ -170,6 +173,8 @@ def build_grid():
         for sku in skus:
             zoho_data = zoho_titles.get(sku, {})
             title = zoho_data.get("website_title", "")
+            if not title or not title.strip():
+                continue
             parsed = name_parser.parse_name(title, cat)
 
             zoho_item = zoho_cache.get(sku, {})
@@ -271,6 +276,12 @@ def _filter_important_attrs(all_keys, already_covered):
         "Product Width (in)", "Product Width (mm)",
         # Handled via Capacity aliases
         "Capacity (yd", "Capacity ($yd",
+        # Duplicates — already covered by Head Style column
+        "Coupler Head Type", "Coupler Type",
+        # Duplicate — already covered by Product Type
+        "Bucket Type",
+        # Handled via Diameter (mm) — avoid duplicate column
+        "Chisel Bit Size", "Bit Diameter",
     ]
     result = []
     for key in sorted(all_keys):
@@ -290,13 +301,19 @@ def _filter_important_attrs(all_keys, already_covered):
 
 
 def _find_parsed_value(parsed, attr_name):
-    """Find value in parsed dict, matching by name."""
+    """Find value in parsed dict, matching by name or ATTR_MAP reverse lookup."""
     if attr_name in parsed:
         return parsed[attr_name]
     # Fuzzy key match
     for k, v in parsed.items():
         if k.lower() in attr_name.lower() or attr_name.lower() in k.lower():
             return v
+    # Reverse ATTR_MAP lookup: if attr_name appears in a parsed key's alias list,
+    # return that parsed key's value.
+    # e.g. grid column "Front Pin Diameter (mm)" → ATTR_MAP["Pin Size"] contains it → use parsed["Pin Size"]
+    for parsed_key, alias_list in name_parser.ATTR_MAP.items():
+        if attr_name in alias_list and parsed_key in parsed:
+            return parsed[parsed_key]
     return ""
 
 
@@ -328,8 +345,8 @@ def _find_source_value(attrs, attr_name):
         "Rear Ear to Ear": ["Rear Ear to Ear (mm)", "Rear Ear to Ear Distance",
                              "Back Ear to Ear"],
         "Carrier Weight Class": ["Carrier Weight Class (tn)", "Carrier Weight Class "],
-        "Coupler Type": ["Coupler Head Type", "Coupler Type", "Coupler Type/Filter",
-                         "Head Type"],
+        "Head Style": ["Coupler Head Type", "Head Style", "Coupler Type", "Coupler Type/Filter",
+                       "Head Type"],
         "Machine Type": ["Machine Type"],
         "Product Capacity (yds)": ["Capacity (yd³)", "Capacity (yd³)/Filter",
                                     "Capacity ($yd^3$)", "Capacity (yds)"],
@@ -339,6 +356,8 @@ def _find_source_value(attrs, attr_name):
         "Category": ["Bucket Type"],
         "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
         "Product Weight (kg)": ["Weight (kg)", "Rake Weight (kg)"],
+        "Diameter (mm)": ["Chisel Bit Size", "Chisel Bit Diameter (mm)",
+                          "Bit Diameter (mm)", "Pin Diameter (mm)"],
         "Outer Diameter": ["Outer Diameter (mm)/Filter", "Outer Diameter (mm)"],
         "Interior Diameter": ["Interior Diameter (mm)/Filter", "Interior Diameter (mm)"],
         "Thickness": ["Height (mm)/Filter", "Height (mm)", "Thickness (mm)"],
@@ -445,6 +464,7 @@ def generate_grid_html(grids, output_path=None):
     letter-spacing:0.03em; border-bottom:1px solid var(--border);
     position:sticky; top:0; z-index:10;
   }}
+  th.sub {{ top:28px; }}
   td {{ padding:5px 8px; border-bottom:1px solid rgba(51,65,85,0.5); }}
   tr:hover {{ background:rgba(255,255,255,0.03); }}
 
