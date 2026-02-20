@@ -35,8 +35,11 @@ def parse_name(title, category=""):
         attrs["Bucket Size"] = f'{m.group(1)}"'
 
     # --- Size for pins/bits (mm diameter) ---
-    # "60 mm Diameter Bucket Pin", "30" Heavy Duty Rock Auger Bit"
+    # "60 mm Diameter Bucket Pin"
+    # "75mm Hammer Moil Chisel Bit", "65mm Wedge Chisel Bit", "50mm Flat Chisel Bit"
     m_diam = re.match(r'^(\d+)\s*mm\s+Diameter', title)
+    if not m_diam:
+        m_diam = re.match(r'^(\d+)\s*mm\s+(?:Hammer\s+)?(?:Moil|Wedge|Flat|Round|Blunt|Taper)\s', title)
     if m_diam:
         attrs["Diameter (mm)"] = f"{m_diam.group(1)} mm"
 
@@ -54,24 +57,31 @@ def parse_name(title, category=""):
     # "for 3 - 4.5 Tons Mini Excavators", "for 16 – 25 Tons Excavators"
     # Also handle en-dash (–), em-dash (—)
     m_weight = re.search(
-        r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s+(Mini\s+)?(\w+)',
+        r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s+'
+        r'(Mini\s+Excavators?|Backhoe(?:\s+Loaders?)?|Wheel\s+Loaders?|Skid\s+Steers?|Excavators?)',
         title
     )
     if m_weight:
         tons = m_weight.group(1).replace(" ", "").replace("\u2013", "-").replace("\u2014", "-")
         attrs["Carrier Weight Class"] = f"{tons} tons"
-        machine = m_weight.group(3).strip()
-        if m_weight.group(2):
-            attrs["Machine Type"] = f"Mini {machine}"
+        machine_raw = m_weight.group(2).strip().lower()
+        if "mini excavat" in machine_raw:
+            attrs["Machine Type"] = "Mini Excavators"
+        elif "wheel" in machine_raw:
+            attrs["Machine Type"] = "Wheel Loader"
+        elif "skid" in machine_raw:
+            attrs["Machine Type"] = "Skid Steer"
+        elif "backhoe" in machine_raw:
+            attrs["Machine Type"] = "Backhoe Loader"
         else:
-            attrs["Machine Type"] = machine
+            attrs["Machine Type"] = "Excavators"
 
     # --- Machine Type (without weight range) ---
     # "for Backhoe Loaders", "for Wheel Loaders", "for Skid Steers", etc.
     if "Machine Type" not in attrs:
         machine_patterns = [
             (r'(?i)for\s+Mini\s+Excavators?', "Mini Excavators"),
-            (r'(?i)for\s+Backhoe\s+Loaders?', "Backhoe"),
+            (r'(?i)for\s+Backhoe\s+Loaders?', "Backhoe Loader"),
             (r'(?i)for\s+Wheel\s+Loaders?', "Wheel Loader"),
             (r'(?i)for\s+Skid\s+Steers?', "Skid Steer"),
             (r'(?i)for\s+Excavators?', "Excavators"),
@@ -81,40 +91,54 @@ def parse_name(title, category=""):
                 attrs["Machine Type"] = machine_name
                 break
 
-    # --- Coupler Type ---
-    coupler_patterns = [
-        (r'(?i)John\s+Deere\s+Wedge\s+Lock\s+Coupler', "John Deere Wedge Lock Coupler"),
-        (r'(?i)Kubota\s+Wedge\s+(?:Lock\s+)?(?:Coupler\s+)?Style', "Kubota Wedge Lock Coupler"),
-        (r'(?i)Bobcat\s+X-?Change\s+Coupler', "Bobcat X-Change Coupler"),
-        (r'(?i)Cat(?:erpillar)?\s+Pin\s+Grabber', "Cat Pin Grabber Coupler"),
-        (r'(?i)Dual\s+Lock\s+Hydraulic\s+Quick\s+Coupler', "Dual Lock Hydraulic Quick Coupler"),
-        (r'(?i)Spring\s+Manual\s+Quick\s+Coupler', "Spring Manual Quick Coupler"),
-        (r'(?i)Pin\s+On\s+Style', "Pin On Style"),
+    # --- Head Style ---
+    # The 4 head styles: Pin On, John Deere Wedge Lock, Bobcat X-Change, Kubota Wedge Lock
+    # "No Quick Coupler" = Pin On (used for brand compatibility)
+    # Note: Quick Coupler product types (Dual Lock HQC, Spring Manual QC) are NOT head styles —
+    # those are product categories captured by Product Type above.
+    head_style_patterns = [
+        (r'(?i)John\s+Deere\s+Wedge\s+Lock', "John Deere Wedge Lock"),
+        (r'(?i)Kubota\s+Wedge\s+(?:Lock\s+)?(?:Coupler\s+)?Style', "Kubota Wedge Lock"),
+        (r'(?i)Kubota\s+Wedge\s+Lock', "Kubota Wedge Lock"),
+        (r'(?i)Bobcat\s+X-?Change', "Bobcat X-Change"),
+        (r'(?i)Cat(?:erpillar)?\s+Pin\s+Grabber', "Cat Pin Grabber"),
+        (r'(?i)No\s+Quick\s+Coupler', "Pin On"),
+        (r'(?i)Pin\s+On', "Pin On"),
     ]
-    for pattern, coupler_name in coupler_patterns:
+    for pattern, style_name in head_style_patterns:
         if re.search(pattern, title):
-            attrs["Coupler Type"] = coupler_name
+            attrs["Head Style"] = style_name
             break
 
-    # If no coupler detected and has "Pins" → likely Pin On
-    if "Coupler Type" not in attrs and "Pin Size" in attrs:
-        attrs["Coupler Type"] = "Pin On"
+    # If no head style detected and has explicit pin size → Pin On
+    # But skip for quick coupler products and actual hammers (pins = mounting pins, not head style)
+    # Note: "Bolt-On Mount for ... Hydraulic Hammers" is NOT a hammer — check for "Bolt-On" before excluding
+    if "Head Style" not in attrs and "Pin Size" in attrs:
+        if not re.search(r'(?i)(hydraulic|manual|spring)\s+quick\s+coupler|dual\s+lock.*coupler', title):
+            is_hammer_product = (
+                re.search(r'(?i)hydraulic\s+hammer|post\s+driver\s+hammer', title)
+                and not re.search(r'(?i)bolt-?on', title)
+            )
+            if not is_hammer_product:
+                attrs["Head Style"] = "Pin On"
 
     # --- Product Type / Category (from name) ---
     type_patterns = [
+        (r'(?i)V-?Bottom.*Bucket', "V-Bottom Bucket"),
         (r'(?i)Ditching Bucket', "Ditching Bucket"),
+        (r'(?i)Severe Duty (?:Skeleton |Digging )?Bucket', "Severe Duty Bucket"),
+        (r'(?i)Heavy Duty (?:Digging |General Purpose )?Bucket', "Heavy Duty Bucket"),
         (r'(?i)Digging Bucket', "Digging Bucket"),
         (r'(?i)Trenching Bucket', "Trenching Bucket"),
         (r'(?i)Banana Bucket', "Banana Bucket"),
         (r'(?i)Claw Bucket', "Claw Bucket"),
         (r'(?i)Tilt Bucket', "Tilt Bucket"),
-        (r'(?i)Severe Duty (?:Skeleton )?Bucket', "Severe Duty Bucket"),
-        (r'(?i)Heavy Duty (?:Digging |General Purpose )?Bucket', "Heavy Duty Bucket"),
         (r'(?i)Skeleton Bucket', "Skeleton Bucket"),
         (r'(?i)4 in 1 Bucket', "4 in 1 Bucket"),
         (r'(?i)Grapple Bucket', "Grapple Bucket"),
-        (r'(?i)V-?Bottom.*Bucket', "V-Bottom Bucket"),
         (r'(?i)Ripper Tooth', "Ripper Tooth"),
+        (r'(?i)Hammer Plate Head', "Hammer Plate Head"),
+        (r'(?i)Bolt-?On Mount', "Bolt-On Mount"),
         (r'(?i)Hydraulic Hammer', "Hydraulic Hammer"),
         (r'(?i)Post Driver Hammer', "Post Driver Hammer"),
         (r'(?i)Mechanical Thumb', "Mechanical Thumb"),
@@ -137,7 +161,6 @@ def parse_name(title, category=""):
         (r'(?i)Brush Cutter', "Brush Cutter"),
         (r'(?i)Auger (?:Drive )?Bit', "Auger Bit"),
         (r'(?i)Rock Auger Bit', "Rock Auger Bit"),
-        (r'(?i)Bolt-?On Mount', "Bolt-On Mount"),
         (r'(?i)Aux Hydraulic Piping', "Aux Hydraulic Piping Kit"),
         (r'(?i)Bucket Pin', "Bucket Pin"),
         (r'(?i)Bucket Shim', "Bucket Shim"),
@@ -184,7 +207,7 @@ def parse_name(title, category=""):
     elif re.search(r'(?i)Excavator', title):
         attrs["Attachment Types"] = "Excavator Attachment"
     elif re.search(r'(?i)Backhoe', title):
-        attrs["Attachment Types"] = "Backhoe Attachment"
+        attrs["Attachment Types"] = "Backhoe Loader Attachment"
 
     return attrs
 
@@ -352,8 +375,8 @@ ATTR_MAP = {
                  "Pin Diameter (mm)", "Front Pin Size"],
     "Carrier Weight Class": ["Carrier Weight Class", "Carrier Weight Class (tn)"],
     "Machine Type": ["Machine Type"],
-    "Coupler Type": ["Coupler Head Type", "Coupler Type", "Coupler Type/Filter"],
-    "Product Type": ["Bucket Type", "Category", "Attachment Types"],
+    "Head Style": ["Coupler Head Type", "Head Style", "Coupler Type", "Coupler Type/Filter"],
+    "Product Type": ["Bucket Type", "Category"],
     "Fits To": ["Fits To"],
     "Diameter (mm)": ["Pin Diameter (mm)", "Chisel Bit Diameter (mm)",
                        "Auger Bit Width (mm)"],
@@ -366,7 +389,6 @@ ATTR_MAP = {
                                 "Rear Pin Size (mm)", "Back Pin Size (mm)"],
     "Attachment Types": ["Attachment Types", "Attachment Types/NA"],
     "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
-    "Product Type": ["Bucket Type", "Category", "Attachment Types"],
 }
 
 
@@ -398,26 +420,42 @@ def _match_value(parsed_val, actual_val):
         ({"skid steer", "skid steer attachment", "skid steer loader"}, True),
         ({"pin on", "pin on style", "pin on coupler", "pin on style coupler",
           "no quick coupler pin on coupler", "backhoe pin on style",
-          "backhoe pin on coupler", "bolt-on adapter"}, True),
-        ({"bobcat x-change coupler", "bobcat x-change", "bobcat style", "bobcat x-change style"}, True),
+          "backhoe pin on coupler", "bolt-on adapter",
+          "no quick coupler", "no coupler"}, True),
+        ({"bobcat x-change coupler", "bobcat x-change", "bobcat style",
+          "bobcat x-change style", "bobcat x change"}, True),
         ({"john deere wedge lock coupler", "john deere wedge lock", "john deere style",
-          "jd wedge lock", "deere wedge lock coupler", "deere style"}, True),
+          "jd wedge lock", "deere wedge lock coupler", "deere style",
+          "john deere wedge lock style"}, True),
         ({"kubota wedge lock coupler", "kubota wedge lock", "kubota style",
           "kubota wedge style", "kubota wedge lock style"}, True),
         ({"cat pin grabber coupler", "cat pin grabber", "cat pin grabber style"}, True),
         ({"dual lock hydraulic quick coupler", "dual lock hqc", "dual lock coupler"}, True),
+        ({"heavy duty bucket", "heavy duty digging bucket", "heavy duty general purpose bucket"}, True),
+        ({"rotating grapple", "rotating hydraulic grapple"}, True),
+        ({"severe duty bucket", "severe duty skeleton bucket with teeth",
+          "severe duty skeleton bucket"}, True),
+        ({"backhoe", "backhoe loader", "backhoe loaders",
+          "backhoe loader attachment", "backhoe attachment"}, True),
+        ({"wheel loader", "wheel loaders"}, True),
+        ({"excavators", "excavator"}, True),
+        ({"v-bottom bucket", "v-bottom buckets"}, True),
+        ({"hammer plate head", "hammer plate heads"}, True),
     ]
     for syn_set, result in synonyms:
         if p in syn_set and a in syn_set:
             return result
-    # If actual contains multiple values (comma-separated), check each
-    if "," in a:
-        parts = [x.strip() for x in a.split(",")]
-        for part in parts:
-            if _normalize_value(part) == p:
+    # If actual contains multiple values (comma-separated in raw value), check each
+    if "," in str(actual_val):
+        raw_parts = re.split(r'(?<!\\),', str(actual_val))
+        for raw_part in raw_parts:
+            part = _normalize_value(raw_part.strip())
+            if not part:
+                continue
+            if part == p:
                 return True
             for syn_set, result in synonyms:
-                if p in syn_set and _normalize_value(part) in syn_set:
+                if p in syn_set and part in syn_set:
                     return result
     # Number extraction and compare
     p_nums = re.findall(r'[\d.]+', p)
@@ -426,10 +464,20 @@ def _match_value(parsed_val, actual_val):
         # For ranges like "3-4.5" vs "3 - 4.5"
         if p_nums == a_nums:
             return True
-        # Single number comparison
+        # Single number comparison — 2% relative tolerance
         if len(p_nums) == 1 and len(a_nums) == 1:
             try:
-                return abs(float(p_nums[0]) - float(a_nums[0])) < 0.1
+                pn = float(p_nums[0])
+                an = float(a_nums[0])
+                # Unit conversion: yd³ ↔ m³ (1 yd³ = 0.7646 m³)
+                if "yd" in p and "m" in a and "yd" not in a:
+                    pn = pn * 0.7646
+                elif "yd" in a and "m" in p and "yd" not in p:
+                    an = an * 0.7646
+                max_val = max(abs(pn), abs(an))
+                if max_val == 0:
+                    return pn == an
+                return abs(pn - an) / max_val <= 0.02
             except ValueError:
                 pass
     # Contains check

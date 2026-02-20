@@ -11,369 +11,208 @@
     --red: #dc2626; --red-light: #fef2f2; --red-border: #fecaca;
     --orange: #d97706; --orange-light: #fffbeb; --orange-border: #fde68a;
     --blue: #2563eb; --blue-light: #eff6ff; --blue-border: #bfdbfe;
-    --green: #16a34a;
+    --green: #16a34a; --green-light: #f0fdf4; --green-border: #bbf7d0;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg); color: var(--text);
-    font-size: 14px; line-height: 1.5; padding: 40px 24px;
-  }
-  .container { max-width: 960px; margin: 0 auto; }
-
-  /* Header */
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; padding: 40px 24px; }
+  .container { max-width: 980px; margin: 0 auto; }
   .header { margin-bottom: 36px; }
   .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 6px; }
   .header .subtitle { color: var(--muted); font-size: 0.95rem; }
   .header .date { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
-
-  /* Summary bar */
-  .summary {
-    display: flex; gap: 16px; margin-bottom: 40px; flex-wrap: wrap;
-  }
-  .summary-card {
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px 24px; flex: 1; min-width: 180px;
-  }
+  .summary { display: flex; gap: 16px; margin-bottom: 40px; flex-wrap: wrap; }
+  .summary-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; flex: 1; min-width: 160px; }
   .summary-card .num { font-size: 2rem; font-weight: 700; line-height: 1; }
   .summary-card .label { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
-  .red .num { color: var(--red); }
-  .orange .num { color: var(--orange); }
-  .blue .num { color: var(--blue); }
-
-  /* Sections */
+  .red .num { color: var(--red); } .orange .num { color: var(--orange); } .blue .num { color: var(--blue); }
   .section { margin-bottom: 40px; }
-  .section-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 16px; padding-bottom: 12px;
-    border-bottom: 2px solid var(--border);
-  }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
   .section-header h2 { font-size: 1.1rem; font-weight: 600; }
-  .badge {
-    padding: 3px 10px; border-radius: 20px;
-    font-size: 0.78rem; font-weight: 600;
-  }
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
   .badge-red { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
   .badge-orange { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
   .badge-blue { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-border); }
   .section-desc { color: var(--muted); font-size: 0.88rem; margin-bottom: 16px; }
-
-  /* Issue cards */
-  .issue-card {
-    background: var(--white); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 20px; margin-bottom: 10px;
-  }
+  .issue-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
   .issue-card.priority-high { border-left: 4px solid var(--red); }
   .issue-card.priority-med { border-left: 4px solid var(--orange); }
   .issue-card.priority-low { border-left: 4px solid var(--blue); }
   .issue-sku { font-size: 0.78rem; color: var(--muted); font-family: monospace; margin-bottom: 4px; }
   .issue-name { font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; }
-  .issue-values { display: flex; gap: 10px; flex-wrap: wrap; }
-  .val-chip {
-    padding: 5px 12px; border-radius: 6px; font-size: 0.82rem;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .val-chip .source { font-size: 0.72rem; color: var(--muted); }
+  .issue-values { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .val-chip { padding: 5px 12px; border-radius: 6px; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; }
   .chip-wrong { background: var(--red-light); border: 1px solid var(--red-border); color: var(--red); }
-  .chip-correct { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--green); }
-  .chip-info { background: var(--blue-light); border: 1px solid var(--blue-border); color: var(--blue); }
-  .arrow { color: var(--muted); font-size: 1rem; align-self: center; }
-
-  /* Table for weight class */
+  .chip-correct { background: var(--green-light); border: 1px solid var(--green-border); color: var(--green); }
+  .chip-neutral { background: #f1f5f9; border: 1px solid var(--border); color: var(--muted); }
+  .arrow { color: var(--muted); font-size: 1rem; }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th {
-    background: #f1f5f9; padding: 10px 14px; text-align: left;
-    font-weight: 600; color: var(--muted); font-size: 0.78rem;
-    text-transform: uppercase; letter-spacing: 0.04em;
-    border-bottom: 1px solid var(--border);
-  }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  th { background: #f1f5f9; padding: 10px 14px; text-align: left; font-weight: 600; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #f8fafc; }
-  .td-sku { font-family: monospace; color: var(--muted); font-size: 0.8rem; }
+  .td-sku { font-family: monospace; color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
   .td-wrong { color: var(--red); font-weight: 600; }
   .td-correct { color: var(--green); font-weight: 600; }
+  .td-neutral { color: var(--muted); }
   .table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-
-  /* Footer */
   .footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.82rem; }
+  .note { background: var(--orange-light); border: 1px solid var(--orange-border); border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; color: var(--orange); margin-bottom: 14px; }
 </style>
 </head>
-<body>
-<div class="container">
-
+<body><div class="container">
   <div class="header">
     <h1>Product Data Quality Report</h1>
-    <p class="subtitle">JM Attachments — Issues found by automated data comparison parser</p>
-    <p class="date">Generated: February 20, 2026</p>
+    <p class="subtitle">JM Attachments &mdash; Issues found by automated data comparison parser</p>
+    <p class="date">Generated: February 20, 2026 &nbsp;&middot;&nbsp; 360+ products scanned across Zoho, Website, Google Sheets</p>
   </div>
-
   <div class="summary">
-    <div class="summary-card red">
-      <div class="num">8</div>
-      <div class="label">Wrong coupler type<br>on website</div>
-    </div>
-    <div class="summary-card orange">
-      <div class="num">12</div>
-      <div class="label">Weight class mismatch<br>website vs title</div>
-    </div>
-    <div class="summary-card blue">
-      <div class="num">2</div>
-      <div class="label">Typos in<br>Google Sheets</div>
-    </div>
+    <div class="summary-card red"><div class="num">1</div><div class="label">Wrong Head Style<br>on website</div></div>
+    <div class="summary-card red"><div class="num">7</div><div class="label">Wrong Machine Type<br>on website</div></div>
+    <div class="summary-card orange"><div class="num">8</div><div class="label">Weight range errors<br>on website</div></div>
+    <div class="summary-card orange"><div class="num">12</div><div class="label">Weight range errors<br>in Google Sheets</div></div>
+    <div class="summary-card blue"><div class="num">20+</div><div class="label">Attachment type errors<br>in Google Sheets</div></div>
   </div>
 
-
-  <!-- SECTION 1: Coupler Type -->
+  <!-- SECTION 1: HEAD STYLE -->
   <div class="section">
-    <div class="section-header">
-      <h2>1. Wrong Coupler Type on Website</h2>
-      <span class="badge badge-red">HIGH PRIORITY</span>
-    </div>
-    <p class="section-desc">
-      These Quick Coupler products have <strong>Pin On Style</strong> set in the website attributes,
-      but the product name and Google Sheets clearly indicate they are hydraulic or manual quick couplers.
-      This affects product filters and customer search.
-    </p>
-
+    <div class="section-header"><h2>1. Wrong Head Style on Website</h2><span class="badge badge-red">HIGH PRIORITY</span></div>
+    <p class="section-desc">This product has <strong>Bobcat X-Change</strong> in its title and confirmed in Google Sheets, but the website attribute is set to <strong>Pin On Style</strong>. Customers filtering by Head Style will not find this product.</p>
     <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7307228</div>
-      <div class="issue-name">JMA Dual Lock Hydraulic Quick Coupler — CAT315HQCDL70</div>
+      <div class="issue-sku">SKU 7987629</div>
+      <div class="issue-name">JMA Bolt-On Head Plate &ndash; Bobcat X-Change Style &ndash; Wheel &amp; Plate Compactor</div>
       <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7987600</div>
-      <div class="issue-name">JMA Spring Manual Quick Coupler — JCS580MMQC</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Spring Manual Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Backhoe Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7987724</div>
-      <div class="issue-name">JMA Spring Manual Quick Coupler — CAT301SMQC30</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Spring Manual Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7187513</div>
-      <div class="issue-name">JMA Variable Dual Lock Hydraulic Quick Coupler — CAT330HQCDL</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7197514</div>
-      <div class="issue-name">JMA Variable Dual Lock Hydraulic Quick Coupler — CACX330HQCD</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7287226</div>
-      <div class="issue-name">JMA Variable Dual Lock Hydraulic Quick Coupler — CAT336HQCDL</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7297227</div>
-      <div class="issue-name">JMA Variable Dual Lock Hydraulic Quick Coupler — CAT320HQCDL</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
-      </div>
-    </div>
-
-    <div class="issue-card priority-high">
-      <div class="issue-sku">SKU 7987618</div>
-      <div class="issue-name">JMA Variable Dual Lock Hydraulic Quick Coupler — JD350HQC</div>
-      <div class="issue-values">
-        <div class="val-chip chip-correct">✓ Should be: <strong>Dual Lock Hydraulic Quick Coupler</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-wrong">✗ Website has: <strong>Pin On Style</strong></div>
-        <div class="val-chip chip-wrong">✗ Google has: <strong>Pin On Coupler</strong></div>
+        <div class="val-chip chip-correct">&check; Title &amp; Google: <strong>Bobcat X-Change</strong></div>
+        <div class="arrow">&rarr;</div>
+        <div class="val-chip chip-wrong">&cross; Website has: <strong>Pin On Style</strong></div>
       </div>
     </div>
   </div>
 
-
-  <!-- SECTION 2: Carrier Weight Class -->
+  <!-- SECTION 2: MACHINE TYPE -->
   <div class="section">
-    <div class="section-header">
-      <h2>2. Carrier Weight Class — Title vs Website Mismatch</h2>
-      <span class="badge badge-orange">MEDIUM PRIORITY</span>
-    </div>
-    <p class="section-desc">
-      The weight class shown in the product title does not match what is stored as an attribute on the website.
-      Either the title needs to be updated or the website attribute needs to be corrected.
-      One case (<strong>SKU 7987715</strong>) looks like a clear typo: <em>1–11 tons</em> instead of <em>1–2 tons</em>.
-    </p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Product</th>
-            <th>Title says</th>
-            <th>Website has</th>
-            <th>Google has</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="td-sku">7987715</td>
-            <td>JMA Manual Quick Coupler — YVIO17MQC30</td>
-            <td class="td-correct">1–2 tons</td>
-            <td class="td-wrong">1–11 tons ⚠ typo</td>
-            <td>1–2 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987661</td>
-            <td>JMA Hydraulic Hammer — JMASB131EBH</td>
-            <td>33–55 tons</td>
-            <td class="td-wrong">35–55 tons</td>
-            <td class="td-wrong">35–55 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987619</td>
-            <td>JMA V-Bottom Severe Digging Bucket 30"</td>
-            <td>33–55 tons</td>
-            <td class="td-wrong">30–50 tons</td>
-            <td class="td-wrong">30–50 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987581</td>
-            <td>JMA Severe Duty Bucket 12"</td>
-            <td>10–15 tons</td>
-            <td class="td-wrong">11–15 tons</td>
-            <td class="td-wrong">11–15 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987531</td>
-            <td>JMA Heavy Duty Digging Bucket 18"</td>
-            <td>15–18 tons</td>
-            <td class="td-wrong">15–19 tons</td>
-            <td>15–18 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987555</td>
-            <td>JMA Skeleton Bucket Bolt on Edge 60"</td>
-            <td>7–10 tons</td>
-            <td class="td-wrong">7–11 tons</td>
-            <td>7–10 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987643</td>
-            <td>JMA Severe Duty Skeleton Bucket 36"</td>
-            <td>16–25 tons</td>
-            <td class="td-wrong">18–25 tons</td>
-            <td>16–25 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987649</td>
-            <td>JMA Severe Duty Skeleton Bucket 42"</td>
-            <td>16–25 tons</td>
-            <td class="td-wrong">18–25 tons</td>
-            <td>16–25 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987621</td>
-            <td>JMA Ripper Tooth — KMTPC160SSR</td>
-            <td>15–18 tons</td>
-            <td class="td-wrong">15–19 tons</td>
-            <td>15–18 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987699</td>
-            <td>JMA Bolt-On Head Adapter — JMASB</td>
-            <td>26–35 tons</td>
-            <td class="td-wrong">23–36 tons</td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987625</td>
-            <td>JMA Bolt-On Head Plate — JD Wedge Style</td>
-            <td>2.6–3.6 tons</td>
-            <td class="td-wrong">2.6–3.7 tons</td>
-            <td class="td-wrong">2.6–3.7 tons</td>
-          </tr>
-          <tr>
-            <td class="td-sku">7987626</td>
-            <td>JMA Bolt-On Head Plate — JD Wedge Style (large)</td>
-            <td>5–6.5 tons</td>
-            <td class="td-wrong">4–8.5 tons</td>
-            <td>5–6.5 tons</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="section-header"><h2>2. Wrong Machine Type on Website</h2><span class="badge badge-red">HIGH PRIORITY</span></div>
+    <p class="section-desc">These products have the wrong <strong>Machine Type</strong> attribute on the website. Customers filtering by machine type (e.g. &ldquo;Excavator&rdquo;) will not find these products, or will find them under the wrong category.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Should be</th><th>Website has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7987546</td><td>9&quot; Banana Bucket for 7&ndash;10 Tons Mini Excavators</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7987671</td><td>Bolt-On Mount for 4&ndash;7 tons Backhoe Loader Hydraulic Hammers</td><td class="td-correct">Backhoe Loader Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7987677</td><td>Bolt-On Mount for 6&ndash;10 tons Excavator Hydraulic Hammers</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7067403</td><td>35&quot; Brush Rake for 3&ndash;9 Tons Excavators</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7067502</td><td>40&quot; Brush Rake for 3&ndash;9 Tons Excavators</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7047203</td><td>35&quot; Root Rake for 5&ndash;6.5 Tons Excavators</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7047302</td><td>35&quot; Root Rake for 4.5&ndash;6.5 Tons Excavators</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Mini Excavator Attachment</td></tr>
+      </tbody>
+    </table></div>
   </div>
 
-
-  <!-- SECTION 3: Google Typos -->
+  <!-- SECTION 3: WEIGHT CLASS - WEBSITE ERRORS -->
   <div class="section">
-    <div class="section-header">
-      <h2>3. Typos in Google Sheets</h2>
-      <span class="badge badge-blue">LOW PRIORITY</span>
-    </div>
-    <p class="section-desc">
-      These values in Google Sheets contain spelling errors and will cause incorrect data if synced to the website.
-    </p>
+    <div class="section-header"><h2>3. Carrier Weight Class &mdash; Website Has Wrong Range</h2><span class="badge badge-orange">MEDIUM PRIORITY</span></div>
+    <p class="section-desc">The weight range on the <strong>website attribute</strong> does not match the product title. The title and Google Sheets agree &mdash; the website needs to be corrected. SKU <strong>7987715</strong> is a clear typo: <em>1&ndash;11 tons</em> instead of <em>1&ndash;2 tons</em>.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Title says</th><th>Website has</th><th>Google has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7987715</td><td>JMA Manual Quick Coupler &mdash; YVIO17MQC30</td><td class="td-correct">1&ndash;2 tons</td><td class="td-wrong">1&ndash;11 tons &ensp;&#9888; typo</td><td>1&ndash;2 tons</td></tr>
+        <tr><td class="td-sku">7987699</td><td>Bolt-On Mount for Excavator Hydraulic Hammers (90 mm pins)</td><td class="td-correct">26&ndash;35 tons</td><td class="td-wrong">23&ndash;36 tons</td><td class="td-neutral">&mdash;</td></tr>
+        <tr><td class="td-sku">7057203</td><td>60&quot; Ditching Bucket for 16&ndash;25 Tons Excavators</td><td class="td-correct">16&ndash;25 tons</td><td class="td-wrong">15&ndash;24 tons</td><td>16&ndash;25 tons</td></tr>
+        <tr><td class="td-sku">7987531</td><td>JMA Heavy Duty Digging Bucket 18&quot;</td><td class="td-correct">15&ndash;18 tons</td><td class="td-wrong">15&ndash;19 tons</td><td>15&ndash;18 tons</td></tr>
+        <tr><td class="td-sku">7987555</td><td>JMA Skeleton Bucket Bolt-On Edge 60&quot;</td><td class="td-correct">7&ndash;10 tons</td><td class="td-wrong">7&ndash;11 tons</td><td>7&ndash;10 tons</td></tr>
+        <tr><td class="td-sku">7987643</td><td>JMA Severe Duty Skeleton Bucket with Teeth 36&quot;</td><td class="td-correct">16&ndash;25 tons</td><td class="td-wrong">18&ndash;25 tons</td><td>16&ndash;25 tons</td></tr>
+        <tr><td class="td-sku">7987649</td><td>JMA Severe Duty Skeleton Bucket with Teeth 42&quot;</td><td class="td-correct">16&ndash;25 tons</td><td class="td-wrong">18&ndash;25 tons</td><td>16&ndash;25 tons</td></tr>
+        <tr><td class="td-sku">7987621</td><td>JMA Ripper Tooth &mdash; KMTPC160SSR</td><td class="td-correct">15&ndash;18 tons</td><td class="td-wrong">15&ndash;19 tons</td><td>15&ndash;18 tons</td></tr>
+      </tbody>
+    </table></div>
+  </div>
 
+  <!-- SECTION 4: WEIGHT CLASS - GOOGLE ERRORS -->
+  <div class="section">
+    <div class="section-header"><h2>4. Carrier Weight Class &mdash; Google Sheets Has Wrong Range</h2><span class="badge badge-orange">MEDIUM PRIORITY</span></div>
+    <p class="section-desc">The weight range in <strong>Google Sheets</strong> does not match the product title. The title and website agree &mdash; Google Sheets needs to be corrected to prevent bad data being synced to the website.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Title says</th><th>Website has</th><th>Google has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7987518</td><td>48&quot; Bucket Rake for 16&ndash;25 Tons Excavators</td><td class="td-correct">16&ndash;25 tons</td><td>16&ndash;25 tons</td><td class="td-wrong">18&ndash;26 tons</td></tr>
+        <tr><td class="td-sku">7987534</td><td>Hydraulic Quick Coupler for 6&ndash;9 Tons Excavators</td><td class="td-correct">6&ndash;9 tons</td><td>6&ndash;9 tons</td><td class="td-wrong">6&ndash;8 tons</td></tr>
+        <tr><td class="td-sku">7987563</td><td>65mm Progressive Link Hydraulic Thumb for 10&ndash;15 Tons</td><td class="td-correct">10&ndash;15 tons</td><td>10&ndash;15 tons</td><td class="td-wrong">11&ndash;15 tons &ensp;&#9888; typo</td></tr>
+        <tr><td class="td-sku">7047005</td><td>24&quot; Root Rake for 5&ndash;6.5 Tons Mini Excavators</td><td class="td-correct">5&ndash;6.5 tons</td><td>5&ndash;6.5 tons</td><td class="td-wrong">4&ndash;6.5 tons</td></tr>
+        <tr><td class="td-sku">7047104</td><td>24&quot; Root Rake for 4.5&ndash;6.5 Tons Mini Excavators</td><td class="td-correct">4.5&ndash;6.5 tons</td><td>4.5&ndash;6.5 tons</td><td class="td-wrong">4&ndash;6.5 tons</td></tr>
+        <tr><td class="td-sku">7047203</td><td>35&quot; Root Rake for 5&ndash;6.5 Tons Excavators</td><td class="td-correct">5&ndash;6.5 tons</td><td>5&ndash;6.5 tons</td><td class="td-wrong">4&ndash;6.5 tons</td></tr>
+        <tr><td class="td-sku">7047302</td><td>35&quot; Root Rake for 4.5&ndash;6.5 Tons Excavators</td><td class="td-correct">4.5&ndash;6.5 tons</td><td>4.5&ndash;6.5 tons</td><td class="td-wrong">4&ndash;6.5 tons</td></tr>
+        <tr><td class="td-sku">770728</td><td>48&quot; Root Rake for 18&ndash;25 Tons Excavators</td><td class="td-correct">18&ndash;25 tons</td><td>18&ndash;25 tons</td><td class="td-wrong">16&ndash;25 tons</td></tr>
+        <tr><td class="td-sku">770729</td><td>64&quot; Root Rake for 29&ndash;48 Tons Excavators</td><td class="td-correct">29&ndash;48 tons</td><td>29&ndash;48 tons</td><td class="td-wrong">29&ndash;45 tons</td></tr>
+        <tr><td class="td-sku">7197514</td><td>Variable Dual Lock Hydraulic Quick Coupler for 23&ndash;36 Tons</td><td class="td-correct">23&ndash;36 tons</td><td>23&ndash;36 tons</td><td class="td-wrong">29&ndash;48 tons</td></tr>
+        <tr><td class="td-sku">7987646</td><td>48&quot; Brush Rake for 4&ndash;6.5 Tons Mini Excavators</td><td class="td-correct">4&ndash;6.5 tons</td><td class="td-neutral">&mdash;</td><td class="td-wrong">5&ndash;6.5 tons</td></tr>
+        <tr><td class="td-sku">7017199</td><td>72&quot; Ditching Bucket for 15&ndash;25 Tons Excavators</td><td class="td-correct">15&ndash;25 tons</td><td class="td-neutral">&mdash;</td><td class="td-wrong">16&ndash;25 tons</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- SECTION 5: WEIGHT CLASS - NEEDS VERIFICATION -->
+  <div class="section">
+    <div class="section-header"><h2>5. Carrier Weight Class &mdash; Needs Manual Verification</h2><span class="badge badge-orange">MEDIUM PRIORITY</span></div>
+    <p class="section-desc">Both website and Google Sheets agree on a range that differs from the product title. One of them is correct &mdash; verify which and update accordingly.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Title says</th><th>Website has</th><th>Google has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7987661</td><td>JMA Hydraulic Hammer &mdash; JMASB131EBH</td><td>33&ndash;55 tons</td><td class="td-wrong">35&ndash;55 tons</td><td class="td-wrong">35&ndash;55 tons</td></tr>
+        <tr><td class="td-sku">7987619</td><td>JMA V-Bottom Severe Digging Bucket 30&quot;</td><td>33&ndash;55 tons</td><td class="td-wrong">30&ndash;50 tons</td><td class="td-wrong">30&ndash;50 tons</td></tr>
+        <tr><td class="td-sku">7987581</td><td>JMA Severe Duty Bucket 12&quot;</td><td>10&ndash;15 tons</td><td class="td-wrong">11&ndash;15 tons</td><td class="td-wrong">11&ndash;15 tons</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- SECTION 6: GOOGLE ATTACHMENT TYPE ERRORS -->
+  <div class="section">
+    <div class="section-header"><h2>6. Google Sheets &mdash; Attachment Type Errors</h2><span class="badge badge-blue">LOW PRIORITY</span></div>
+    <p class="section-desc">These values in Google Sheets are incorrect or contain typos for the <strong>Attachment Types</strong> attribute. They need to be fixed to prevent wrong data syncing to the website.</p>
+
+    <p style="font-weight:600; margin-bottom:8px; font-size:0.9rem;">Typos:</p>
     <div class="issue-card priority-low">
-      <div class="issue-sku">SKU 7987671 — JMA Bolt-On Head Adapter – Hydraulic Hammer Mount</div>
-      <div class="issue-name">Attachment Types — Google Sheets</div>
+      <div class="issue-sku">SKU 7987671 &mdash; Bolt-On Mount for 4&ndash;7 tons Backhoe Loader Hydraulic Hammers</div>
+      <div class="issue-name">Attachment Types</div>
       <div class="issue-values">
-        <div class="val-chip chip-wrong">✗ Has: <strong>"Loader Backoe Attachment"</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-correct">✓ Should be: <strong>"Backhoe Loader Attachment"</strong></div>
+        <div class="val-chip chip-wrong">&cross; Has: <strong>&ldquo;Loader Backoe Attachment&rdquo;</strong></div>
+        <div class="arrow">&rarr;</div>
+        <div class="val-chip chip-correct">&check; Should be: <strong>&ldquo;Backhoe Loader Attachment&rdquo;</strong></div>
       </div>
     </div>
-
     <div class="issue-card priority-low">
-      <div class="issue-sku">SKU 770738 — JMA Skid Steer Heavy Duty General Purpose Bucket 72"</div>
-      <div class="issue-name">Attachment Types — Google Sheets</div>
+      <div class="issue-sku">SKU 770738 &mdash; JMA Skid Steer Heavy Duty General Purpose Bucket 72&quot;</div>
+      <div class="issue-name">Attachment Types</div>
       <div class="issue-values">
-        <div class="val-chip chip-wrong">✗ Has: <strong>"Skis Steer Attachment"</strong></div>
-        <div class="arrow">→</div>
-        <div class="val-chip chip-correct">✓ Should be: <strong>"Skid Steer Attachment"</strong></div>
+        <div class="val-chip chip-wrong">&cross; Has: <strong>&ldquo;Skis Steer Attachment&rdquo;</strong></div>
+        <div class="arrow">&rarr;</div>
+        <div class="val-chip chip-correct">&check; Should be: <strong>&ldquo;Skid Steer Attachment&rdquo;</strong></div>
       </div>
     </div>
+
+    <p style="font-weight:600; margin: 16px 0 8px; font-size:0.9rem;">Wrong attachment types (Hammer Plate Heads &mdash; Google disagrees with title):</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Should be</th><th>Google has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7407238</td><td>Hammer Plate Head for Excavator Hydraulic Hammers</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Demolition Attachment, Skid Steer Attachment</td></tr>
+        <tr><td class="td-sku">7427240</td><td>Hammer Plate Head for Excavator Hydraulic Hammers</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Demolition Attachment, Skid Steer Attachment</td></tr>
+        <tr><td class="td-sku">7447242</td><td>Hammer Plate Head for Mini Excavator Hydraulic Hammers</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Demolition Attachment, Backhoe Loader Attachment</td></tr>
+      </tbody>
+    </table></div>
+
+    <p style="font-weight:600; margin: 16px 0 8px; font-size:0.9rem;">Wrong attachment types (Hydraulic Thumbs &amp; Couplers &mdash; 9 products):</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SKU</th><th>Product</th><th>Should be</th><th>Google has</th></tr></thead>
+      <tbody>
+        <tr><td class="td-sku">7277324</td><td>40mm Main Pin Hydraulic Thumb for 3&ndash;4.5 tons Mini Excavators</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Backhoe Loader Attachment</td></tr>
+        <tr><td class="td-sku">7327329</td><td>Manual Quick Coupler for Backhoe Loaders</td><td class="td-correct">Backhoe Loader Attachment</td><td class="td-wrong">Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7337330</td><td>Manual Quick Coupler for 10&ndash;15 Tons Excavators</td><td class="td-correct">Excavator Attachment</td><td class="td-wrong">Backhoe Loader Attachment</td></tr>
+        <tr><td class="td-sku">7987600</td><td>Spring Manual Quick Coupler for Backhoe Loaders</td><td class="td-correct">Backhoe Loader Attachment</td><td class="td-wrong">Backhoe Attachment</td></tr>
+        <tr><td class="td-sku">7757372</td><td>45mm QC Main Pin Hydraulic Thumb for Excavators and Backhoe Loaders</td><td class="td-correct">Excavator Attachment, Backhoe Loader Attachment</td><td class="td-wrong">Backhoe Loader Attachment only</td></tr>
+        <tr><td class="td-sku">7967294</td><td>800 Joules Hydraulic Hammer For Backhoe Loaders</td><td class="td-correct">Backhoe Loader Attachment</td><td class="td-wrong">Mini Excavator Attachment, Demolition Attachment</td></tr>
+        <tr><td class="td-sku">7047301</td><td>800 Joules Hydraulic Hammer for Mini Excavators and Backhoe Loaders</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Demolition Attachment, Backhoe Loader Attachment</td></tr>
+        <tr><td class="td-sku">7057302</td><td>500 Joules Hydraulic Hammer for Mini Excavators and Backhoe Loaders</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Demolition Attachment, Excavator Attachment</td></tr>
+        <tr><td class="td-sku">7737370</td><td>350 Joules Post Driver Hammer for Mini Excavators</td><td class="td-correct">Mini Excavator Attachment</td><td class="td-wrong">Skid Steer Attachment (wrong machine!)</td></tr>
+      </tbody>
+    </table></div>
   </div>
 
-  <div class="footer">
-    Generated automatically by JM Attachments data comparison parser &nbsp;·&nbsp;
-    Total products scanned: 360+ &nbsp;·&nbsp; Sources: Zoho Inventory, Website (WooCommerce), Google Sheets
-  </div>
-
-</div>
-</body>
-</html>
+  <div class="footer">Generated automatically by JM Attachments data comparison parser &nbsp;&middot;&nbsp; 360+ products scanned &nbsp;&middot;&nbsp; Sources: Zoho Inventory, Website (WooCommerce), Google Sheets</div>
+</div></body></html>

@@ -19,7 +19,7 @@ COMMON_ATTRS = [
     "Pin Size",
     "Carrier Weight Class",
     "Machine Type",
-    "Coupler Type",
+    "Head Style",
 ]
 
 # Category-specific extra attributes
@@ -170,6 +170,8 @@ def build_grid():
         for sku in skus:
             zoho_data = zoho_titles.get(sku, {})
             title = zoho_data.get("website_title", "")
+            if not title or not title.strip():
+                continue
             parsed = name_parser.parse_name(title, cat)
 
             zoho_item = zoho_cache.get(sku, {})
@@ -271,6 +273,10 @@ def _filter_important_attrs(all_keys, already_covered):
         "Product Width (in)", "Product Width (mm)",
         # Handled via Capacity aliases
         "Capacity (yd", "Capacity ($yd",
+        # Duplicates — already covered by Head Style column
+        "Coupler Head Type", "Coupler Type",
+        # Duplicate — already covered by Product Type
+        "Bucket Type",
     ]
     result = []
     for key in sorted(all_keys):
@@ -328,8 +334,8 @@ def _find_source_value(attrs, attr_name):
         "Rear Ear to Ear": ["Rear Ear to Ear (mm)", "Rear Ear to Ear Distance",
                              "Back Ear to Ear"],
         "Carrier Weight Class": ["Carrier Weight Class (tn)", "Carrier Weight Class "],
-        "Coupler Type": ["Coupler Head Type", "Coupler Type", "Coupler Type/Filter",
-                         "Head Type"],
+        "Head Style": ["Coupler Head Type", "Head Style", "Coupler Type", "Coupler Type/Filter",
+                       "Head Type"],
         "Machine Type": ["Machine Type"],
         "Product Capacity (yds)": ["Capacity (yd³)", "Capacity (yd³)/Filter",
                                     "Capacity ($yd^3$)", "Capacity (yds)"],
@@ -445,6 +451,7 @@ def generate_grid_html(grids, output_path=None):
     letter-spacing:0.03em; border-bottom:1px solid var(--border);
     position:sticky; top:0; z-index:10;
   }}
+  th.sub {{ top:28px; }}
   td {{ padding:5px 8px; border-bottom:1px solid rgba(51,65,85,0.5); }}
   tr:hover {{ background:rgba(255,255,255,0.03); }}
 
