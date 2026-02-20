@@ -301,13 +301,19 @@ def _filter_important_attrs(all_keys, already_covered):
 
 
 def _find_parsed_value(parsed, attr_name):
-    """Find value in parsed dict, matching by name."""
+    """Find value in parsed dict, matching by name or ATTR_MAP reverse lookup."""
     if attr_name in parsed:
         return parsed[attr_name]
     # Fuzzy key match
     for k, v in parsed.items():
         if k.lower() in attr_name.lower() or attr_name.lower() in k.lower():
             return v
+    # Reverse ATTR_MAP lookup: if attr_name appears in a parsed key's alias list,
+    # return that parsed key's value.
+    # e.g. grid column "Front Pin Diameter (mm)" → ATTR_MAP["Pin Size"] contains it → use parsed["Pin Size"]
+    for parsed_key, alias_list in name_parser.ATTR_MAP.items():
+        if attr_name in alias_list and parsed_key in parsed:
+            return parsed[parsed_key]
     return ""
 
 
