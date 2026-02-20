@@ -379,6 +379,7 @@ ATTR_MAP = {
     "Product Type": ["Bucket Type", "Category"],
     "Fits To": ["Fits To"],
     "Diameter (mm)": ["Pin Diameter (mm)", "Chisel Bit Diameter (mm)",
+                       "Chisel Bit Size", "Bit Diameter (mm)",
                        "Auger Bit Width (mm)"],
     "Length (mm)": ["Length (mm)", "Pin Length (mm)"],
     "Hex Size": ["Hex Size"],

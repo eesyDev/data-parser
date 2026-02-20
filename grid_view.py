@@ -29,6 +29,9 @@ CATEGORY_ATTRS = {
     "Bucket Shims": ["Outer Diameter", "Interior Diameter", "Thickness"],
     "Auger Bits": ["Hex Size"],
     "Hydraulic Hammer": ["Energy Class (J)"],
+    "Hammer Chisel Bits": ["Diameter (mm)"],
+    "Hammer Moil Chisel Bits": ["Diameter (mm)"],
+    "Hammer Wedge Chisel Bits": ["Diameter (mm)"],
 }
 
 # Categories where "Bucket Size" doesn't apply
@@ -277,6 +280,8 @@ def _filter_important_attrs(all_keys, already_covered):
         "Coupler Head Type", "Coupler Type",
         # Duplicate — already covered by Product Type
         "Bucket Type",
+        # Handled via Diameter (mm) — avoid duplicate column
+        "Chisel Bit Size", "Bit Diameter",
     ]
     result = []
     for key in sorted(all_keys):
@@ -345,6 +350,8 @@ def _find_source_value(attrs, attr_name):
         "Category": ["Bucket Type"],
         "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
         "Product Weight (kg)": ["Weight (kg)", "Rake Weight (kg)"],
+        "Diameter (mm)": ["Chisel Bit Size", "Chisel Bit Diameter (mm)",
+                          "Bit Diameter (mm)", "Pin Diameter (mm)"],
         "Outer Diameter": ["Outer Diameter (mm)/Filter", "Outer Diameter (mm)"],
         "Interior Diameter": ["Interior Diameter (mm)/Filter", "Interior Diameter (mm)"],
         "Thickness": ["Height (mm)/Filter", "Height (mm)", "Thickness (mm)"],
