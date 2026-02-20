@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Config with secrets
+config.py
+
+# Data files (may contain sensitive/large data)
+data/zoho_api_cache.json
+data/*.xlsx
+data/*.csv
+
+# Excel reports (large binary, HTML versions are enough)
+output/*.xlsx
