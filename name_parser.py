@@ -26,13 +26,23 @@ def parse_name(title, category=""):
     title = title.strip()
     attrs = {}
 
+    # --- Two-dimension size for thumbs: "26" x 45" Mechanical Thumb" ---
+    m_two_dims = re.match(
+        r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s*[xX]\s*(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s',
+        title
+    )
+    if m_two_dims and re.search(r'(?i)\bthumb\b', title):
+        attrs["Thumb Width (in)"] = f'{m_two_dims.group(1)}"'
+        attrs["Product Length (in)"] = f'{m_two_dims.group(2)}"'
+
     # --- Size (inches) ---
     # "42" Ditching Bucket", "75" 4 in 1 Bucket", "24" Digging Bucket"
     # Also handle smart quotes: " (\u201c), " (\u201d), ″ (\u2033)
     # Quote is REQUIRED to avoid matching "800 Joules..." as bucket size
-    m = re.match(r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s', title)
-    if m:
-        attrs["Bucket Size"] = f'{m.group(1)}"'
+    if not m_two_dims:
+        m = re.match(r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s', title)
+        if m:
+            attrs["Bucket Size"] = f'{m.group(1)}"'
 
     # --- Size for pins/bits (mm diameter) ---
     # "60 mm Diameter Bucket Pin"
@@ -58,23 +68,24 @@ def parse_name(title, category=""):
     # Also handle en-dash (–), em-dash (—)
     m_weight = re.search(
         r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s+'
-        r'(Mini\s+Excavators?|Backhoe(?:\s+Loaders?)?|Wheel\s+Loaders?|Skid\s+Steers?|Excavators?)',
+        r'(Mini\s+Excavators?|Backhoe(?:\s+Loaders?)?|Wheel\s+Loaders?|Skid\s+Steers?|Excavators?|Weight\s+Class)',
         title
     )
     if m_weight:
         tons = m_weight.group(1).replace(" ", "").replace("\u2013", "-").replace("\u2014", "-")
         attrs["Carrier Weight Class"] = f"{tons} tons"
         machine_raw = m_weight.group(2).strip().lower()
-        if "mini excavat" in machine_raw:
-            attrs["Machine Type"] = "Mini Excavators"
-        elif "wheel" in machine_raw:
-            attrs["Machine Type"] = "Wheel Loader"
-        elif "skid" in machine_raw:
-            attrs["Machine Type"] = "Skid Steer"
-        elif "backhoe" in machine_raw:
-            attrs["Machine Type"] = "Backhoe Loader"
-        else:
-            attrs["Machine Type"] = "Excavators"
+        if "weight class" not in machine_raw:
+            if "mini excavat" in machine_raw:
+                attrs["Machine Type"] = "Mini Excavators"
+            elif "wheel" in machine_raw:
+                attrs["Machine Type"] = "Wheel Loader"
+            elif "skid" in machine_raw:
+                attrs["Machine Type"] = "Skid Steer"
+            elif "backhoe" in machine_raw:
+                attrs["Machine Type"] = "Backhoe Loader"
+            else:
+                attrs["Machine Type"] = "Excavators"
 
     # --- Machine Type (without weight range) ---
     # "for Backhoe Loaders", "for Wheel Loaders", "for Skid Steers", etc.
@@ -277,6 +288,25 @@ def _load_zoho_attrs():
             val = item.get(cf_key, "")
             if val and str(val).strip() and str(val).lower() not in ("false", ""):
                 attrs[display_name] = str(val).strip()
+        # Shipping dimensions from Zoho (length/width/height in inches, weight in lb)
+        dim_unit = item.get("dimension_unit", "in")
+        for field, attr_name in [("length", "Shipping Length (in)"),
+                                  ("width",  "Shipping Width (in)"),
+                                  ("height", "Shipping Height (in)")]:
+            raw = item.get(field)
+            if raw is not None and str(raw).strip() not in ("", "0", "0.0"):
+                val_f = float(raw)
+                if dim_unit == "cm":
+                    val_f = round(val_f / 2.54, 2)
+                elif dim_unit == "mm":
+                    val_f = round(val_f / 25.4, 2)
+                attrs[attr_name] = str(round(val_f, 2))
+        raw_w = item.get("weight")
+        if raw_w is not None and str(raw_w).strip() not in ("", "0", "0.0"):
+            w = float(raw_w)
+            if item.get("weight_unit", "lb") == "kg":
+                w = round(w * 2.20462, 2)
+            attrs["Shipping Weight (lb)"] = str(round(w, 2))
         result[sku] = attrs
     return result
 
@@ -390,6 +420,8 @@ ATTR_MAP = {
                                 "Rear Pin Size (mm)", "Back Pin Size (mm)"],
     "Attachment Types": ["Attachment Types", "Attachment Types/NA"],
     "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
+    "Thumb Width (in)": ["Thumb Width (in)", "Thumb Width"],
+    "Product Length (in)": ["Product Length (in)", "Product Length"],
 }
 
 
@@ -470,11 +502,6 @@ def _match_value(parsed_val, actual_val):
             try:
                 pn = float(p_nums[0])
                 an = float(a_nums[0])
-                # Unit conversion: yd³ ↔ m³ (1 yd³ = 0.7646 m³)
-                if "yd" in p and "m" in a and "yd" not in a:
-                    pn = pn * 0.7646
-                elif "yd" in a and "m" in p and "yd" not in p:
-                    an = an * 0.7646
                 max_val = max(abs(pn), abs(an))
                 if max_val == 0:
                     return pn == an

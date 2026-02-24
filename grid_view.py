@@ -32,6 +32,7 @@ CATEGORY_ATTRS = {
     "Hammer Chisel Bits": ["Diameter (mm)"],
     "Hammer Moil Chisel Bits": ["Diameter (mm)"],
     "Hammer Wedge Chisel Bits": ["Diameter (mm)"],
+    "Mechanical Thumb": ["Thumb Width (in)", "Product Length (in)"],
 }
 
 # Categories where "Bucket Size" doesn't apply
@@ -52,6 +53,9 @@ NO_BUCKET_SIZE = {
     "Ripper Tooth - Tooth Replacement", "Ripper Tooth Replacement",
     "Ripper Shank Protectors",
     "Skid Steer Wear Parts",
+    "Mechanical Grapple", "Mechanical Grapples",
+    "Rotating Grapple", "Rotating Hydraulic Grapple", "Rotating Hydraulic Grapples",
+    "Heavy Duty Grapple Buckets", "Heavy Duty Grapple Skeleton Buckets",
     "Mechanical Thumb", "Hydraulic Thumb",
     "Main Pin Hydraulic Thumb", "Main Pin Hydraulic Progressive Thumb",
     "QC Main Pin Hydraulic Thumb",
@@ -80,6 +84,11 @@ DATA_ONLY_ATTRS = {
     "Add-ons Included",
     "Front Ear to Ear",
     "Rear Ear to Ear",
+    "Shipping Length (in)",
+    "Shipping Width (in)",
+    "Shipping Height (in)",
+    "Shipping Weight (lb)",
+    "Shipping Weight (kg)",
 }
 
 
@@ -261,7 +270,11 @@ def build_grid():
 
 
 def _attr_base(key):
-    """Strip trailing (unit) and normalize for dedup comparison."""
+    """Strip trailing (unit) and normalize for dedup comparison.
+    Capacity columns keep their unit so yd³ and m³ stay as separate columns.
+    """
+    if re.search(r'(?i)capacity', key):
+        return key.strip().lower()
     return re.sub(r'\s*\([^)]*\)\s*$', '', key).strip().lower()
 
 
@@ -269,13 +282,10 @@ def _filter_important_attrs(all_keys, already_covered):
     """Filter to important/interesting attributes, skip noise."""
     skip_patterns = [
         "Variation Name", "Category", "Handling Unit", "Unit",
-        "Shipping Length", "Shipping Width", "Shipping Height",
-        "Shipping Weight", "Weight (lb)", "Weight (kg)",
+        "Weight (lb)", "Weight (kg)",
         "Product Name", "Name",
         # Handled via Bucket Size alias — avoid duplicate column
         "Product Width (in)", "Product Width (mm)",
-        # Handled via Capacity aliases
-        "Capacity (yd", "Capacity ($yd",
         # Duplicates — already covered by Head Style column
         "Coupler Head Type", "Coupler Type",
         # Duplicate — already covered by Product Type
@@ -323,11 +333,15 @@ def _find_source_value(attrs, attr_name):
         return ""
     if attr_name in attrs:
         return attrs[attr_name]
-    # Try partial match
-    attr_lower = attr_name.lower()
-    for k, v in attrs.items():
-        if attr_lower in k.lower() or k.lower() in attr_lower:
-            return v
+    # For capacity columns use strict matching only — no partial across units
+    if re.search(r'(?i)capacity', attr_name):
+        pass  # skip partial match, go straight to aliases below
+    else:
+        # Try partial match
+        attr_lower = attr_name.lower()
+        for k, v in attrs.items():
+            if attr_lower in k.lower() or k.lower() in attr_lower:
+                return v
     # Map common aliases
     aliases = {
         "Bucket Size": ["Bucket Size (in)", "Bucket Size (in)/Filter",
@@ -348,14 +362,21 @@ def _find_source_value(attrs, attr_name):
         "Head Style": ["Coupler Head Type", "Head Style", "Coupler Type", "Coupler Type/Filter",
                        "Head Type"],
         "Machine Type": ["Machine Type"],
-        "Product Capacity (yds)": ["Capacity (yd³)", "Capacity (yd³)/Filter",
-                                    "Capacity ($yd^3$)", "Capacity (yds)"],
-        "Capacity (m³)": ["Capacity (m³)", "Capacity ($m^3$)", "Capacity (m3)"],
+        # Capacity — strict per-unit aliases, no cross-unit lookup
+        "Capacity (yd³)": ["Capacity (yd³)/Filter", "Capacity ($yd^3$)",
+                           "Product Capacity (yds)", "Capacity (yds)"],
+        "Capacity (m³)":  ["Capacity ($m^3$)", "Capacity (m3)",
+                           "Product Capacity (m³)"],
         "Attachment Types": ["Attachment Types/NA"],
         "Bucket Type": ["Category", "Category/NA"],
         "Category": ["Bucket Type"],
         "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
         "Product Weight (kg)": ["Weight (kg)", "Rake Weight (kg)"],
+        "Shipping Length (in)": ["Shipping Length (in)/NA", "Shipping Length (in)"],
+        "Shipping Width (in)":  ["Shipping Width (in)/NA",  "Shipping Width (in)"],
+        "Shipping Height (in)": ["Shipping Height (in)/NA", "Shipping Height (in)"],
+        "Shipping Weight (lb)": ["Shipping Weight (lb)/NA", "Shipping Weight (lb)", "Shipping Weight (lbs)", "Shipping Weight (lbs)/NA"],
+        "Shipping Weight (kg)": ["Shipping Weight (kg)/NA", "Shipping Weight (kg)"],
         "Diameter (mm)": ["Chisel Bit Size", "Chisel Bit Diameter (mm)",
                           "Bit Diameter (mm)", "Pin Diameter (mm)"],
         "Outer Diameter": ["Outer Diameter (mm)/Filter", "Outer Diameter (mm)"],
