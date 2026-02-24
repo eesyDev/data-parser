@@ -1,0 +1,3595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Head Type Products — John Deere / Bobcat / Kubota</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6;
+    --green:#22c55e; --red:#ef4444; --orange:#f59e0b; --purple:#a78bfa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.4; padding:20px;
+    font-size:13px;
+  }
+  h1 { font-size:1.5rem; margin-bottom:4px; }
+  .subtitle { color:var(--muted); margin-bottom:20px; }
+  .stats { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; }
+  .stat .num { font-size:1.6rem; font-weight:700; }
+  .stat .label { color:var(--muted); font-size:0.8rem; }
+  /* Tabs */
+  .tabs { display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:0; }
+  .tab {
+    padding:10px 20px; cursor:pointer; border-radius:8px 8px 0 0;
+    background:transparent; color:var(--muted); border:1px solid transparent;
+    border-bottom:none; font-size:0.88rem; font-weight:500;
+    transition:all 0.15s; position:relative; bottom:-2px;
+  }
+  .tab:hover { color:var(--text); background:var(--card); }
+  .tab.active { color:var(--accent); background:var(--card); border-color:var(--border); }
+  .tab .badge {
+    background:var(--border); color:var(--muted);
+    padding:2px 8px; border-radius:10px; font-size:0.72rem; margin-left:6px;
+  }
+  .tab.active .badge { background:rgba(59,130,246,0.2); color:var(--accent); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  /* Table */
+  .table-wrap {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:0 12px 12px 12px; overflow:hidden; margin-bottom:32px;
+  }
+  .search-bar { padding:10px 14px; border-bottom:1px solid var(--border); }
+  .search-bar input {
+    padding:7px 11px; border-radius:7px; border:1px solid var(--border);
+    background:var(--bg); color:var(--text); font-size:0.85rem; width:340px;
+  }
+  .search-bar input::placeholder { color:var(--muted); }
+  .scrollable { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:0.8rem; white-space:nowrap; }
+  thead th {
+    background:rgba(0,0,0,0.25); padding:8px 10px; text-align:left;
+    font-weight:600; color:var(--muted); text-transform:uppercase;
+    font-size:0.68rem; letter-spacing:0.04em; border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:10;
+  }
+  th.group-head {
+    color:var(--accent); text-align:center; border-left:2px solid var(--accent);
+    background:#0d1823; font-size:0.68rem;
+  }
+  td { padding:6px 10px; border-bottom:1px solid rgba(51,65,85,0.5); vertical-align:top; }
+  tr:hover { background:rgba(255,255,255,0.03); }
+  .tag-yes { color:var(--green); }
+  .tag-no  { color:var(--red); }
+  .price   { font-family:'SF Mono',Monaco,monospace; }
+</style>
+</head>
+<body>
+<div style="max-width:100%;margin:0 auto">
+  <h1>Head Type Products — John Deere / Bobcat / Kubota</h1>
+  <p class="subtitle">Products filtered by Coupler Head Type from all sources (Zoho · Website · Google Sheets)</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num" style="color:var(--accent)">51</div><div class="label">Total products</div></div>
+    <div class="stat"><div class="num" style="color:#4ade80">28</div><div class="label">John Deere</div></div>
+    <div class="stat"><div class="num" style="color:#c084fc">15</div><div class="label">Bobcat</div></div>
+    <div class="stat"><div class="num" style="color:#fbbf24">8</div><div class="label">Kubota</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('all',this)">All Brands<span class="badge">51</span></div>
+    <div class="tab" onclick="showTab('JohnDeere',this)" style="--tc:#4ade80">John Deere<span class="badge">28</span></div>
+    <div class="tab" onclick="showTab('Bobcat',this)" style="--tc:#c084fc">Bobcat<span class="badge">15</span></div>
+    <div class="tab" onclick="showTab('Kubota',this)" style="--tc:#fbbf24">Kubota<span class="badge">8</span></div>
+  </div>
+
+  <div class="tab-content active" id="tab-all">
+  <div class="table-wrap">
+    <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'tbl-all')"></div>
+    <div class="scrollable">
+      <table id="tbl-all">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Zoho Title</th>
+            <th>Website Name</th>
+            <th>In Web</th>
+            <th>In Google</th>
+            <th class="price">Zoho Price</th>
+            <th class="price">Web Price</th>
+            <th class="group-head" colspan="3">Head Type</th>
+            <th class="group-head" colspan="3">Pin Size</th>
+            <th class="group-head" colspan="3">Carrier Weight Class</th>
+            <th class="group-head" colspan="3">Machine Type</th>
+            <th class="group-head" colspan="3">Bucket Size</th>
+            <th class="group-head" colspan="3">Front Pin Diameter (mm)</th>
+            <th class="group-head" colspan="3">Rear Pin Diameter (mm)</th>
+          </tr>
+          <tr>
+            <th colspan="9"></th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>7007298</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>42&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>42“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7027497</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>6&quot; Trenching Bucket - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td>6“ Trenching Bucket - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7037499</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>Ripper Tooth - Bobcat X-Change Coupler For 3 - 9 Tons Mini Excavators</td>
+            <td>Ripper Tooth - Bobcat X-Change Coupler For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7057105</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>12&quot; Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>12“ Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7057204</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>8&quot; Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>8“ Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7057500</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>12&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini E</td>
+            <td>12“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini E</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067403</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>35&quot; Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td>35“ Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067501</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>12&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>12“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067502</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>40&quot; Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td>40“ Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077008</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>18&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>18“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077206</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>24&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>24“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077305</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>30&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>30“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077404</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>36&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>36“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7087009</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>36&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>36“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7087108</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>48&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>48“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,897.00</td>
+            <td class="price">$1,897.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7117011</strong></td>
+            <td>Banana Bucket with Teeth</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>6&quot; Banana Bucket with Teeth - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td>6“ Banana Bucket with Teeth - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7247024</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Brush Rake John Deere Wedge Lock Coupler Style for  5 - 6.5 Tons Mini Excava</td>
+            <td>48“ Brush Rake John Deere Wedge Lock Coupler Style for  5 - 6.5 Tons Mini Excava</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7317031</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>40&quot; Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>40“ Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,597.00</td>
+            <td class="price">$1,597.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7347034</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>35&quot; Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>35“ Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7357134</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>48“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,397.00</td>
+            <td class="price">$2,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7367135</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Ditching Bucket for John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>48“ Ditching Bucket for John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,497.00</td>
+            <td class="price">$2,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7377136</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>42&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>42“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,197.00</td>
+            <td class="price">$2,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7387137</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>42&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>42“ Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,297.00</td>
+            <td class="price">$2,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7397138</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>36“ Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,897.00</td>
+            <td class="price">$1,897.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7437142</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>36“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,497.00</td>
+            <td class="price">$2,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7447143</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>36“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7567155</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>30&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>30“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7577156</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>30&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>30“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7717170</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>24&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>24“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7727171</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>24&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>24“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7777374</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>Ripper Tooth - John Deere Style For 5 - 6.5 Tons Mini Excavators</td>
+            <td>Ripper Tooth - John Deere Style For 5 - 6.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3</td>
+            <td>3</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7787375</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>Ripper Tooth John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons Mini Excavat</td>
+            <td>Ripper Tooth John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons Mini Excavat</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7817477</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>8&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>8“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7827478</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>8&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>8“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7877186</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>18&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>18“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7887187</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>18&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>18“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7907486</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>6&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>6“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7917487</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>6&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>6“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987583</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>6&quot; Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td>6“ Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987584</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>8&quot; Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td>8“ Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987585</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>18&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>18“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987586</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>24&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>24“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987587</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>30&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>30“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,797.00</td>
+            <td class="price">$1,797.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987588</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>36&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>36“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987589</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>Ripper Tooth - Kubota Wedge Style For 2.8 - 4.7 Tons Mini Excavators</td>
+            <td>Ripper Tooth - Kubota Wedge Style For 2.8 - 4.7 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987590</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>40&quot; Brush Rake Kubota Wedge Lock Coupler Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>40“ Brush Rake Kubota Wedge Lock Coupler Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,197.00</td>
+            <td class="price">$2,197.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40</td>
+            <td>40</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987604</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>60&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>60“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$3,297.00</td>
+            <td class="price">$3,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>60&quot;</td>
+            <td>60&quot;</td>
+            <td>60&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987605</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>72&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>72“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$3,697.00</td>
+            <td class="price">$3,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>72&quot;</td>
+            <td>72&quot;</td>
+            <td>72&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987625</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 2.6 - 3.6 tons Wheel &amp; Plate Compactors</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 2.6 - 3.6 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$697.00</td>
+            <td class="price">$697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987626</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 5 - 6.5 tons Wheel &amp; Plate Compactors</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 5 - 6.5 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$797.00</td>
+            <td class="price">$797.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987629</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>Bobcat X-Change Style Bolt-On Head Plate for 3 - 9 tons Wheel &amp; Plate Compactors</td>
+            <td>Bobcat X-Change Style Bolt-On Head Plate for 3 - 9 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$797.00</td>
+            <td class="price">$797.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+  <div class="tab-content" id="tab-JohnDeere">
+  <div class="table-wrap">
+    <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'tbl-JohnDeere')"></div>
+    <div class="scrollable">
+      <table id="tbl-JohnDeere">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Zoho Title</th>
+            <th>Website Name</th>
+            <th>In Web</th>
+            <th>In Google</th>
+            <th class="price">Zoho Price</th>
+            <th class="price">Web Price</th>
+            <th class="group-head" colspan="3">Head Type</th>
+            <th class="group-head" colspan="3">Pin Size</th>
+            <th class="group-head" colspan="3">Carrier Weight Class</th>
+            <th class="group-head" colspan="3">Machine Type</th>
+            <th class="group-head" colspan="3">Bucket Size</th>
+            <th class="group-head" colspan="3">Front Pin Diameter (mm)</th>
+            <th class="group-head" colspan="3">Rear Pin Diameter (mm)</th>
+          </tr>
+          <tr>
+            <th colspan="9"></th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>7057500</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>12&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini E</td>
+            <td>12“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini E</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067501</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>12&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>12“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7247024</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Brush Rake John Deere Wedge Lock Coupler Style for  5 - 6.5 Tons Mini Excava</td>
+            <td>48“ Brush Rake John Deere Wedge Lock Coupler Style for  5 - 6.5 Tons Mini Excava</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7317031</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>40&quot; Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>40“ Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,597.00</td>
+            <td class="price">$1,597.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7347034</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>35&quot; Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>35“ Brush Rake John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7357134</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>48“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,397.00</td>
+            <td class="price">$2,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7367135</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>48&quot; Ditching Bucket for John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>48“ Ditching Bucket for John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,497.00</td>
+            <td class="price">$2,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7377136</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>42&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>42“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,197.00</td>
+            <td class="price">$2,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7387137</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>42&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>42“ Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,297.00</td>
+            <td class="price">$2,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7397138</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>36“ Ditching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,897.00</td>
+            <td class="price">$1,897.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7437142</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>36“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,497.00</td>
+            <td class="price">$2,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7447143</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>36&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>36“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7567155</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>30&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>30“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7577156</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>30&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>30“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7717170</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>24&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>24“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7727171</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>24&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>24“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7777374</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>Ripper Tooth - John Deere Style For 5 - 6.5 Tons Mini Excavators</td>
+            <td>Ripper Tooth - John Deere Style For 5 - 6.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3</td>
+            <td>3</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7787375</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>Ripper Tooth John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons Mini Excavat</td>
+            <td>Ripper Tooth John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons Mini Excavat</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7817477</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>8&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>8“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7827478</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>8&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>8“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7877186</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>18&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td>18“ Digging Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Exc</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7887187</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>18&quot; Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>18“ Digging Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7907486</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>6&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>6“ Trenching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7917487</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>6&quot; Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td>6“ Trenching Bucket John Deere Wedge Lock Coupler Style for 2.6 - 3.7 Tons</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987604</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>60&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>60“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$3,297.00</td>
+            <td class="price">$3,297.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>60&quot;</td>
+            <td>60&quot;</td>
+            <td>60&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987605</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>72&quot; Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td>72“ Ditching Bucket John Deere Wedge Lock Coupler Style for 4 - 8.5 Tons Mini Ex</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$3,697.00</td>
+            <td class="price">$3,697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>72&quot;</td>
+            <td>72&quot;</td>
+            <td>72&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987625</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 2.6 - 3.6 tons Wheel &amp; Plate Compactors</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 2.6 - 3.6 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$697.00</td>
+            <td class="price">$697.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td>2.6 - 3.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987626</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#4ade80;font-weight:600">John Deere</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 5 - 6.5 tons Wheel &amp; Plate Compactors</td>
+            <td>JD Wedge Style Bolt-On Head Plate for 5 - 6.5 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$797.00</td>
+            <td class="price">$797.00</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#4ade80;font-weight:600">John Deere Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>4 - 8.5 tons</td>
+            <td>4 - 8.5 tons</td>
+            <td>5 - 6.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+  <div class="tab-content" id="tab-Bobcat">
+  <div class="table-wrap">
+    <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'tbl-Bobcat')"></div>
+    <div class="scrollable">
+      <table id="tbl-Bobcat">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Zoho Title</th>
+            <th>Website Name</th>
+            <th>In Web</th>
+            <th>In Google</th>
+            <th class="price">Zoho Price</th>
+            <th class="price">Web Price</th>
+            <th class="group-head" colspan="3">Head Type</th>
+            <th class="group-head" colspan="3">Pin Size</th>
+            <th class="group-head" colspan="3">Carrier Weight Class</th>
+            <th class="group-head" colspan="3">Machine Type</th>
+            <th class="group-head" colspan="3">Bucket Size</th>
+            <th class="group-head" colspan="3">Front Pin Diameter (mm)</th>
+            <th class="group-head" colspan="3">Rear Pin Diameter (mm)</th>
+          </tr>
+          <tr>
+            <th colspan="9"></th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>7007298</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>42&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>42“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td>42&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7027497</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>6&quot; Trenching Bucket - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td>6“ Trenching Bucket - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7037499</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>Ripper Tooth - Bobcat X-Change Coupler For 3 - 9 Tons Mini Excavators</td>
+            <td>Ripper Tooth - Bobcat X-Change Coupler For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7057105</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>12&quot; Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>12“ Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td>12&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7057204</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>8&quot; Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>8“ Trenching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$997.00</td>
+            <td class="price">$997.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067403</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>35&quot; Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td>35“ Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td>35&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7067502</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>40&quot; Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td>40“ Brush Rake for 3 - 9 Tons Excavators. X-Change Coupler Style</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077008</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>18&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>18“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077206</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>24&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>24“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077305</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>30&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>30“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,397.00</td>
+            <td class="price">$1,397.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7077404</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>36&quot; Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>36“ Digging Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7087009</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>36&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>36“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7087108</strong></td>
+            <td>Ditching Bucket</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>48&quot; Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td>48“ Ditching Bucket Bobcat X-Change Coupler for 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,897.00</td>
+            <td class="price">$1,897.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td>48&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7117011</strong></td>
+            <td>Banana Bucket with Teeth</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>6&quot; Banana Bucket with Teeth - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td>6“ Banana Bucket with Teeth - Bobcat Style For 3 - 9 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987629</strong></td>
+            <td>Wheel &amp; Plate Head Adapters</td>
+            <td style="color:#c084fc;font-weight:600">Bobcat</td>
+            <td>Bobcat X-Change Style Bolt-On Head Plate for 3 - 9 tons Wheel &amp; Plate Compactors</td>
+            <td>Bobcat X-Change Style Bolt-On Head Plate for 3 - 9 tons Wheel &amp; Plate Compactors</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$797.00</td>
+            <td class="price">$797.00</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td>Pin On Style</td>
+            <td><span style="color:#c084fc;font-weight:600">Bobcat Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td>3 - 9 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Excavator Attachment, Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+  <div class="tab-content" id="tab-Kubota">
+  <div class="table-wrap">
+    <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'tbl-Kubota')"></div>
+    <div class="scrollable">
+      <table id="tbl-Kubota">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Zoho Title</th>
+            <th>Website Name</th>
+            <th>In Web</th>
+            <th>In Google</th>
+            <th class="price">Zoho Price</th>
+            <th class="price">Web Price</th>
+            <th class="group-head" colspan="3">Head Type</th>
+            <th class="group-head" colspan="3">Pin Size</th>
+            <th class="group-head" colspan="3">Carrier Weight Class</th>
+            <th class="group-head" colspan="3">Machine Type</th>
+            <th class="group-head" colspan="3">Bucket Size</th>
+            <th class="group-head" colspan="3">Front Pin Diameter (mm)</th>
+            <th class="group-head" colspan="3">Rear Pin Diameter (mm)</th>
+          </tr>
+          <tr>
+            <th colspan="9"></th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>7987583</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>6&quot; Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td>6“ Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,097.00</td>
+            <td class="price">$1,097.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td>6&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987584</strong></td>
+            <td>Trenching Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>8&quot; Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td>8“ Trenching Bucket Kubota Wedge Lock Coupler Style for 2.8 - 4.7 Tons Mini Exca</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,297.00</td>
+            <td class="price">$1,297.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td>8&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987585</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>18&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>18“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,497.00</td>
+            <td class="price">$1,497.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td>18&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987586</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>24&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>24“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,697.00</td>
+            <td class="price">$1,697.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td>24&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987587</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>30&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>30“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,797.00</td>
+            <td class="price">$1,797.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td>30&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987588</strong></td>
+            <td>Digging Bucket</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>36&quot; Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>36“ Digging Bucket Kubota Wedge Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,997.00</td>
+            <td class="price">$1,997.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td>36&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987589</strong></td>
+            <td>Ripper Tooth</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>Ripper Tooth - Kubota Wedge Style For 2.8 - 4.7 Tons Mini Excavators</td>
+            <td>Ripper Tooth - Kubota Wedge Style For 2.8 - 4.7 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$1,197.00</td>
+            <td class="price">$1,197.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td>2.8 - 4.7 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+          <tr>
+            <td><strong>7987590</strong></td>
+            <td>Brush Rake</td>
+            <td style="color:#fbbf24;font-weight:600">Kubota</td>
+            <td>40&quot; Brush Rake Kubota Wedge Lock Coupler Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td>40“ Brush Rake Kubota Wedge Lock Coupler Style for 3 - 4.5 Tons Mini Excavators</td>
+            <td class="tag-yes">Yes</td>
+            <td class="tag-yes">Yes</td>
+            <td class="price">$2,197.00</td>
+            <td class="price">$2,197.00</td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Style</span></td>
+            <td><span style="color:#fbbf24;font-weight:600">Kubota Wedge Style</span></td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td>3 - 4.5 tons</td>
+            <td style="color:var(--muted)">—</td>
+            <td>Mini Excavator Attachment</td>
+            <td style="color:var(--muted)">—</td>
+            <td>40</td>
+            <td>40</td>
+            <td>40&quot;</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td style="color:var(--muted)">—</td>
+            <td>30</td>
+            <td>30</td>
+            <td style="color:var(--muted)">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+function filterTable(input, tableId) {
+  const filter = input.value.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+  });
+}
+</script>
+</div>
+</body>
+</html>

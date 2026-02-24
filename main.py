@@ -49,6 +49,11 @@ def main():
     grids = grid_view.build_grid()
     grid_path = grid_view.generate_grid_html(grids)
 
+    # 7. Head Type report (John Deere / Bobcat / Kubota)
+    print("\n7. Head Type report...")
+    ht_rows = grid_view.build_head_type_grid()
+    grid_view.generate_head_type_html(ht_rows)
+
     print("\nDone!")
 
 

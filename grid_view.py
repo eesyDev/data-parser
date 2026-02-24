@@ -480,7 +480,18 @@ def generate_grid_html(grids, output_path=None):
     background: var(--bg); color: var(--text); line-height: 1.4; padding: 20px;
     font-size: 13px; overflow-x: hidden;
   }}
-  .container {{ max-width: 100%; margin: 0 auto; overflow-x: hidden; }}
+  .container {{ max-width: 100%; margin: 0 auto; }}
+  /* Page navigation */
+  .page-nav {{
+    display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;
+  }}
+  .page-nav a {{
+    padding:7px 16px; border-radius:8px; font-size:0.85rem; font-weight:500;
+    text-decoration:none; border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s;
+  }}
+  .page-nav a:hover {{ color:var(--text); border-color:var(--accent); }}
+  .page-nav a.current {{ color:var(--accent); border-color:var(--accent); background:rgba(59,130,246,0.1); }}
   h1 {{ font-size: 1.5rem; margin-bottom: 4px; }}
   .subtitle {{ color: var(--muted); margin-bottom: 16px; }}
   .stats {{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }}
@@ -518,7 +529,7 @@ def generate_grid_html(grids, output_path=None):
     background:var(--card); border:1px solid var(--border); border-radius:10px;
     overflow:hidden; max-width: calc(100vw - 40px);
   }}
-  .grid-scroll {{ overflow-x:auto; max-height:600px; overflow-y:auto; }}
+  .grid-scroll {{ overflow-x:auto; }}
   table {{ border-collapse:separate; border-spacing:0; font-size:0.78rem; white-space:nowrap; }}
   th {{
     background:#0d1a2e; padding:6px 8px; text-align:left;
@@ -586,6 +597,11 @@ def generate_grid_html(grids, output_path=None):
 </head>
 <body>
 <div class="container">
+  <nav class="page-nav">
+    <a href="comparison_report.html">Comparison Report</a>
+    <a href="attribute_grid.html" class="current">Attribute Grid</a>
+    <a href="head_type_report.html">Head Type (JD / Bobcat / Kubota)</a>
+  </nav>
   <h1>Attribute Grid — JM Attachments</h1>
   <p class="subtitle">All products grouped by category. Attributes from: <span class="val-name">From Title (extracted from Zoho website title)</span> | <span class="val-zoho">Zoho (actual fields)</span> | <span class="val-web">Website (WooCommerce)</span> | <span class="val-google">Google Sheets</span></p>
 
@@ -821,3 +837,377 @@ def _esc(text):
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace('"', "&quot;"))
+
+
+# ─── Head Type filtered page ────────────────────────────────────────────────
+
+HEAD_TYPE_BRANDS = ["John Deere", "Bobcat", "Kubota"]
+
+# All attribute keys that may carry head type / coupler type information
+_HEAD_KEYS = [
+    "Head Type", "Head Style", "Coupler Head Type",
+    "Coupler Type", "Coupler Type/Filter",
+]
+
+# Extra columns to show in the table
+_HT_EXTRA_ATTRS = [
+    "Pin Size", "Carrier Weight Class", "Machine Type",
+    "Bucket Size", "Front Pin Diameter (mm)", "Rear Pin Diameter (mm)",
+]
+
+
+def _get_head_type(attrs):
+    """Return head type value from an attribute dict (any matching key)."""
+    for key in _HEAD_KEYS:
+        val = attrs.get(key, "")
+        if val and str(val).strip():
+            return str(val).strip()
+    # Partial match fallback
+    for k, v in attrs.items():
+        if "head" in k.lower() or "coupler" in k.lower():
+            if v and str(v).strip():
+                return str(v).strip()
+    return ""
+
+
+def _brand_match(val):
+    """Return the matched brand name or '' if none of the brands found."""
+    if not val:
+        return ""
+    val_lower = val.lower()
+    for brand in HEAD_TYPE_BRANDS:
+        if brand.lower() in val_lower:
+            return brand
+    return ""
+
+
+def build_head_type_grid():
+    """
+    Build list of products whose Head Type is John Deere, Bobcat, or Kubota.
+    Returns list of dicts ready for HTML generation.
+    """
+    print("  Building Head Type grid (John Deere / Bobcat / Kubota)...")
+
+    zoho_titles = name_parser._load_zoho_website_titles()
+    zoho_attrs  = name_parser._load_zoho_attrs()
+    web_attrs   = name_parser._load_website_attrs()
+    google_attrs = name_parser._load_google_attrs()
+
+    # Load zoho cache — skip inactive
+    zoho_cache = {}
+    cache_path = os.path.join(config.DATA_DIR, "zoho_api_cache.json")
+    if os.path.exists(cache_path):
+        with open(cache_path, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                if str(item.get("status", "")).lower() == "inactive":
+                    continue
+                sku = str(item.get("sku", "")).strip().upper()
+                if sku:
+                    zoho_cache[sku] = item
+
+    # Load website names/prices
+    web_products = {}
+    if os.path.exists(config.WEBSITE_CSV):
+        df = pd.read_csv(config.WEBSITE_CSV, dtype=str, low_memory=False)
+        for _, row in df.iterrows():
+            sku = str(row.get("SKU", "")).strip().upper()
+            if sku:
+                web_products[sku] = {
+                    "name": row.get("Name", ""),
+                    "price": row.get("Regular price", ""),
+                }
+
+    rows = []
+    for sku in sorted(zoho_cache.keys()):
+        item = zoho_cache[sku]
+        zoho_data = zoho_titles.get(sku, {})
+        title = zoho_data.get("website_title", "") or str(item.get("name", ""))
+
+        z_attrs = zoho_attrs.get(sku, {})
+        w_attrs = web_attrs.get(sku, {})
+        g_attrs = google_attrs.get(sku, {})
+
+        ht_zoho   = _get_head_type(z_attrs)
+        ht_web    = _get_head_type(w_attrs)
+        ht_google = _get_head_type(g_attrs)
+
+        # Check if any source has a matching brand
+        brand = (_brand_match(ht_zoho)
+                 or _brand_match(ht_web)
+                 or _brand_match(ht_google))
+        if not brand:
+            continue
+
+        web_prod = web_products.get(sku, {})
+
+        # Google product name
+        google_name = ""
+        for key in ["Variation Name", "Variation Name/NA", "Product Name", "Name"]:
+            if key in g_attrs:
+                google_name = g_attrs[key]
+                break
+
+        row = {
+            "SKU": sku,
+            "Brand": brand,
+            "Category": item.get("category_name", ""),
+            "Zoho Title": title[:80],
+            "Website Name": str(web_prod.get("name", ""))[:80],
+            "Google Name": str(google_name)[:80],
+            "Zoho Price": item.get("rate", ""),
+            "Website Price": web_prod.get("price", ""),
+            "In Website": "Yes" if sku in web_attrs else "No",
+            "In Google":  "Yes" if sku in google_attrs else "No",
+            "Head Type [Zoho]":   ht_zoho,
+            "Head Type [Web]":    ht_web,
+            "Head Type [Google]": ht_google,
+        }
+
+        # Extra attribute columns
+        for attr in _HT_EXTRA_ATTRS:
+            row[f"{attr} [Zoho]"]   = _find_source_value(z_attrs, attr)
+            row[f"{attr} [Web]"]    = _find_source_value(w_attrs, attr)
+            row[f"{attr} [Google]"] = _find_source_value(g_attrs, attr)
+
+        rows.append(row)
+
+    print(f"    Found {len(rows)} products with Head Type John Deere / Bobcat / Kubota")
+    return rows
+
+
+def generate_head_type_html(rows, output_path=None):
+    """Generate HTML page for products filtered by Head Type brand."""
+    output_path = output_path or os.path.join(config.OUTPUT_DIR, "head_type_report.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    by_brand = {b: [r for r in rows if r["Brand"] == b] for b in HEAD_TYPE_BRANDS}
+    total = len(rows)
+
+    brand_colors = {
+        "John Deere": ("#166534", "#4ade80"),   # green
+        "Bobcat":     ("#7c3aed", "#c084fc"),   # purple
+        "Kubota":     ("#b45309", "#fbbf24"),   # orange
+    }
+
+    def fmt_price(val):
+        try:
+            return f"${float(val):,.2f}"
+        except (ValueError, TypeError):
+            return '<span style="color:var(--muted)">—</span>'
+
+    def ht_cell(val, brand):
+        if not val or str(val).strip() in ("", "nan", "none"):
+            return '<span style="color:var(--muted)">—</span>'
+        matched = _brand_match(val)
+        if matched:
+            _, color = brand_colors.get(matched, ("#1e293b", "#e2e8f0"))
+            return f'<span style="color:{color};font-weight:600">{_esc(val)}</span>'
+        return _esc(val)
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Head Type Products — John Deere / Bobcat / Kubota</title>
+<style>
+  :root {{
+    --bg:#0f172a; --card:#1e293b; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6;
+    --green:#22c55e; --red:#ef4444; --orange:#f59e0b; --purple:#a78bfa;
+  }}
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.4; padding:20px;
+    font-size:13px; overflow-x:hidden;
+  }}
+  .page-nav {{
+    display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;
+  }}
+  .page-nav a {{
+    padding:7px 16px; border-radius:8px; font-size:0.85rem; font-weight:500;
+    text-decoration:none; border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s;
+  }}
+  .page-nav a:hover {{ color:var(--text); border-color:var(--accent); }}
+  .page-nav a.current {{ color:var(--accent); border-color:var(--accent); background:rgba(59,130,246,0.1); }}
+  h1 {{ font-size:1.5rem; margin-bottom:4px; }}
+  .subtitle {{ color:var(--muted); margin-bottom:20px; }}
+  .stats {{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }}
+  .stat {{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; }}
+  .stat .num {{ font-size:1.6rem; font-weight:700; }}
+  .stat .label {{ color:var(--muted); font-size:0.8rem; }}
+  /* Tabs */
+  .tabs {{ display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:0; }}
+  .tab {{
+    padding:10px 20px; cursor:pointer; border-radius:8px 8px 0 0;
+    background:transparent; color:var(--muted); border:1px solid transparent;
+    border-bottom:none; font-size:0.88rem; font-weight:500;
+    transition:all 0.15s; position:relative; bottom:-2px;
+  }}
+  .tab:hover {{ color:var(--text); background:var(--card); }}
+  .tab.active {{ color:var(--accent); background:var(--card); border-color:var(--border); }}
+  .tab .badge {{
+    background:var(--border); color:var(--muted);
+    padding:2px 8px; border-radius:10px; font-size:0.72rem; margin-left:6px;
+  }}
+  .tab.active .badge {{ background:rgba(59,130,246,0.2); color:var(--accent); }}
+  .tab-content {{ display:none; }}
+  .tab-content.active {{ display:block; }}
+  /* Table */
+  .table-wrap {{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:0 12px 12px 12px; overflow:hidden; margin-bottom:32px;
+  }}
+  .search-bar {{ padding:10px 14px; border-bottom:1px solid var(--border); }}
+  .search-bar input {{
+    padding:7px 11px; border-radius:7px; border:1px solid var(--border);
+    background:var(--bg); color:var(--text); font-size:0.85rem; width:340px;
+  }}
+  .search-bar input::placeholder {{ color:var(--muted); }}
+  .scrollable {{ overflow-x:auto; }}
+  table {{ width:100%; border-collapse:collapse; font-size:0.8rem; white-space:nowrap; }}
+  thead th {{
+    background:rgba(0,0,0,0.25); padding:8px 10px; text-align:left;
+    font-weight:600; color:var(--muted); text-transform:uppercase;
+    font-size:0.68rem; letter-spacing:0.04em; border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:10;
+  }}
+  th.group-head {{
+    color:var(--accent); text-align:center; border-left:2px solid var(--accent);
+    background:#0d1823; font-size:0.68rem;
+  }}
+  td {{ padding:6px 10px; border-bottom:1px solid rgba(51,65,85,0.5); vertical-align:top; }}
+  tr:hover {{ background:rgba(255,255,255,0.03); }}
+  .tag-yes {{ color:var(--green); }}
+  .tag-no  {{ color:var(--red); }}
+  .price   {{ font-family:'SF Mono',Monaco,monospace; }}
+</style>
+</head>
+<body>
+<div style="max-width:100%;margin:0 auto">
+  <nav class="page-nav">
+    <a href="comparison_report.html">Comparison Report</a>
+    <a href="attribute_grid.html">Attribute Grid</a>
+    <a href="head_type_report.html" class="current">Head Type (JD / Bobcat / Kubota)</a>
+  </nav>
+  <h1>Head Type Products — John Deere / Bobcat / Kubota</h1>
+  <p class="subtitle">Products filtered by Coupler Head Type from all sources (Zoho · Website · Google Sheets)</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num" style="color:var(--accent)">{total}</div><div class="label">Total products</div></div>
+"""
+    for brand in HEAD_TYPE_BRANDS:
+        _, color = brand_colors[brand]
+        cnt = len(by_brand[brand])
+        html += f'    <div class="stat"><div class="num" style="color:{color}">{cnt}</div><div class="label">{_esc(brand)}</div></div>\n'
+
+    html += '  </div>\n\n  <div class="tabs">\n'
+    html += f'    <div class="tab active" onclick="showTab(\'all\',this)">All Brands<span class="badge">{total}</span></div>\n'
+    for brand in HEAD_TYPE_BRANDS:
+        tab_id = brand.replace(" ", "")
+        _, color = brand_colors[brand]
+        html += f'    <div class="tab" onclick="showTab(\'{tab_id}\',this)" style="--tc:{color}">{_esc(brand)}<span class="badge">{len(by_brand[brand])}</span></div>\n'
+    html += '  </div>\n'
+
+    def _build_table(tab_rows, table_id):
+        out = f"""
+  <div class="table-wrap">
+    <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'{table_id}')"></div>
+    <div class="scrollable">
+      <table id="{table_id}">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Zoho Title</th>
+            <th>Website Name</th>
+            <th>In Web</th>
+            <th>In Google</th>
+            <th class="price">Zoho Price</th>
+            <th class="price">Web Price</th>
+            <th class="group-head" colspan="3">Head Type</th>
+"""
+        for attr in _HT_EXTRA_ATTRS:
+            out += f'            <th class="group-head" colspan="3">{_esc(attr)}</th>\n'
+        out += """          </tr>
+          <tr>
+            <th colspan="9"></th>
+            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
+            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
+            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
+"""
+        for _ in _HT_EXTRA_ATTRS:
+            out += '            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>\n'
+            out += '            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>\n'
+            out += '            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>\n'
+        out += '          </tr>\n        </thead>\n        <tbody>\n'
+
+        for r in tab_rows:
+            brand = r["Brand"]
+            _, color = brand_colors.get(brand, ("#1e293b", "#e2e8f0"))
+            in_web = r["In Website"]
+            in_google = r["In Google"]
+            out += '          <tr>\n'
+            out += f'            <td><strong>{_esc(r["SKU"])}</strong></td>\n'
+            out += f'            <td>{_esc(r["Category"])}</td>\n'
+            out += f'            <td style="color:{color};font-weight:600">{_esc(brand)}</td>\n'
+            out += f'            <td>{_esc(r["Zoho Title"])}</td>\n'
+            out += f'            <td>{_esc(r["Website Name"])}</td>\n'
+            out += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
+            out += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
+            out += f'            <td class="price">{fmt_price(r["Zoho Price"])}</td>\n'
+            out += f'            <td class="price">{fmt_price(r["Website Price"])}</td>\n'
+            out += f'            <td>{ht_cell(r["Head Type [Zoho]"], brand)}</td>\n'
+            out += f'            <td>{ht_cell(r["Head Type [Web]"], brand)}</td>\n'
+            out += f'            <td>{ht_cell(r["Head Type [Google]"], brand)}</td>\n'
+            for attr in _HT_EXTRA_ATTRS:
+                for src in ["Zoho", "Web", "Google"]:
+                    val = r.get(f"{attr} [{src}]", "")
+                    if val and str(val).strip() not in ("", "nan", "none"):
+                        out += f'            <td>{_esc(str(val))}</td>\n'
+                    else:
+                        out += '            <td style="color:var(--muted)">—</td>\n'
+            out += '          </tr>\n'
+
+        out += '        </tbody>\n      </table>\n    </div>\n  </div>\n'
+        return out
+
+    # All tab
+    html += '\n  <div class="tab-content active" id="tab-all">'
+    html += _build_table(rows, "tbl-all")
+    html += '  </div>\n'
+
+    # Per-brand tabs
+    for brand in HEAD_TYPE_BRANDS:
+        tab_id = brand.replace(" ", "")
+        html += f'\n  <div class="tab-content" id="tab-{tab_id}">'
+        html += _build_table(by_brand[brand], f"tbl-{tab_id}")
+        html += '  </div>\n'
+
+    html += """
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+function filterTable(input, tableId) {
+  const filter = input.value.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+  });
+}
+</script>
+</div>
+</body>
+</html>"""
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"  Head Type report: {output_path}")
+    return output_path
