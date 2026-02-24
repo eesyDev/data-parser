@@ -27,12 +27,27 @@ CATEGORY_ATTRS = {
     "Bucket Tooth": ["Tooth Style", "Tooth Pin Part Number", "Serie"],
     "Bucket Pin": ["Diameter (mm)", "Length (mm)"],
     "Bucket Shims": ["Outer Diameter", "Interior Diameter", "Thickness"],
-    "Auger Bits": ["Hex Size"],
+    "Auger Bits": ["Auger Bit Size", "Hex Size"],
+    "Rock Auger Bits": ["Auger Bit Size", "Hex Size"],
     "Hydraulic Hammer": ["Energy Class (J)"],
+    "Hydraulic Hammers": ["Energy Class (J)"],
+    "Post Driver Hammer": ["Energy Class (J)"],
+    "Post Driver Hammers": ["Energy Class (J)"],
+    "Plate Compactor": ["Compaction Width (in)", "Compaction Width (mm)", "Impulse Force (lbs)", "Impulse Force (tons)"],
+    "Plate Compactors": ["Compaction Width (in)", "Compaction Width (mm)", "Impulse Force (lbs)", "Impulse Force (tons)"],
     "Hammer Chisel Bits": ["Diameter (mm)"],
     "Hammer Moil Chisel Bits": ["Diameter (mm)"],
     "Hammer Wedge Chisel Bits": ["Diameter (mm)"],
     "Mechanical Thumb": ["Thumb Width (in)", "Product Length (in)"],
+    "Mechanical Grapple": ["Grapple Width (in)", "Grapple Width (mm)"],
+    "Mechanical Grapples": ["Grapple Width (in)", "Grapple Width (mm)"],
+    "Rotating Grapple": ["Grapple Width (in)", "Grapple Width (mm)"],
+    "Rotating Hydraulic Grapple": ["Grapple Width (in)", "Grapple Width (mm)"],
+    "Rotating Hydraulic Grapples": ["Grapple Width (in)", "Grapple Width (mm)"],
+    "Vibratory Roller": ["Compaction Width (in)", "Compaction Width (mm)"],
+    "Vibratory Rollers": ["Compaction Width (in)", "Compaction Width (mm)"],
+    "Compaction Wheel": ["Compaction Width (in)", "Compaction Width (mm)"],
+    "Compaction Wheels": ["Compaction Width (in)", "Compaction Width (mm)"],
 }
 
 # Categories where "Bucket Size" doesn't apply
@@ -89,6 +104,8 @@ DATA_ONLY_ATTRS = {
     "Shipping Height (in)",
     "Shipping Weight (lb)",
     "Shipping Weight (kg)",
+    "Impulse Force (lbs)",
+    "Impulse Force (tons)",
 }
 
 
@@ -167,6 +184,7 @@ def build_grid():
         extra_google = _filter_important_attrs(all_google_keys, attr_keys)
 
         # Build unified list of attribute columns — deduplicate by base name (including substrings)
+        required_attrs = set(attr_keys)  # COMMON_ATTRS + CATEGORY_ATTRS — always shown if any data
         all_attr_names = list(dict.fromkeys(attr_keys))  # preserve order, unique
         covered_bases = {_attr_base(a) for a in all_attr_names}
         for a in extra_zoho + extra_web + extra_google:
@@ -248,18 +266,30 @@ def build_grid():
 
         df = pd.DataFrame(rows)
 
-        # Drop attribute columns where ALL 4 value sub-columns are empty across every row
+        # Drop attribute columns that are empty or too sparse.
+        # Required attrs (COMMON_ATTRS + CATEGORY_ATTRS): keep if any row has data.
+        # Extra (dynamically discovered) attrs: keep only if ≥25% of rows have data.
+        min_coverage = max(2, int(0.25 * len(df))) if len(df) > 0 else 1
         non_empty_attrs = []
         for attr in all_attr_names:
-            has_data = any(
-                df[f"{attr} {suffix}"].apply(
-                    lambda x: bool(str(x).strip()) and str(x) not in ("", "nan")
-                ).any()
-                for suffix in ["[Name]", "[Zoho]", "[Web]", "[Google]"]
-                if f"{attr} {suffix}" in df.columns
-            )
-            if has_data:
-                non_empty_attrs.append(attr)
+            rows_with_data = 0
+            for suffix in ["[Name]", "[Zoho]", "[Web]", "[Google]"]:
+                col = f"{attr} {suffix}"
+                if col in df.columns:
+                    rows_with_data = max(
+                        rows_with_data,
+                        df[col].apply(
+                            lambda x: bool(str(x).strip()) and str(x).lower() not in ("", "nan", "none")
+                        ).sum()
+                    )
+            if attr in required_attrs:
+                # Required: show if any single row has data
+                if rows_with_data >= 1:
+                    non_empty_attrs.append(attr)
+            else:
+                # Extra: show only if enough rows have data
+                if rows_with_data >= min_coverage:
+                    non_empty_attrs.append(attr)
 
         grids[cat] = {
             "data": df,
@@ -273,7 +303,7 @@ def _attr_base(key):
     """Strip trailing (unit) and normalize for dedup comparison.
     Capacity columns keep their unit so yd³ and m³ stay as separate columns.
     """
-    if re.search(r'(?i)capacity', key):
+    if re.search(r'(?i)capacity|grapple width|compaction width|impulse force', key):
         return key.strip().lower()
     return re.sub(r'\s*\([^)]*\)\s*$', '', key).strip().lower()
 
@@ -286,6 +316,10 @@ def _filter_important_attrs(all_keys, already_covered):
         "Product Name", "Name",
         # Handled via Bucket Size alias — avoid duplicate column
         "Product Width (in)", "Product Width (mm)",
+        # Handled via Compaction Width (in)/(mm) — avoid duplicate column
+        "Compaction Width",
+        # Handled via Impulse Force (lbs)/(tons) — avoid duplicate column
+        "Impulse Force",
         # Duplicates — already covered by Head Style column
         "Coupler Head Type", "Coupler Type",
         # Duplicate — already covered by Product Type
@@ -333,8 +367,8 @@ def _find_source_value(attrs, attr_name):
         return ""
     if attr_name in attrs:
         return attrs[attr_name]
-    # For capacity columns use strict matching only — no partial across units
-    if re.search(r'(?i)capacity', attr_name):
+    # For capacity/grapple/compaction/impulse columns use strict matching only — no partial across units
+    if re.search(r'(?i)capacity|grapple width|compaction width|impulse force', attr_name):
         pass  # skip partial match, go straight to aliases below
     else:
         # Try partial match
@@ -363,13 +397,20 @@ def _find_source_value(attrs, attr_name):
                        "Head Type"],
         "Machine Type": ["Machine Type"],
         # Capacity — strict per-unit aliases, no cross-unit lookup
-        "Capacity (yd³)": ["Capacity (yd³)/Filter", "Capacity ($yd^3$)",
-                           "Product Capacity (yds)", "Capacity (yds)"],
-        "Capacity (m³)":  ["Capacity ($m^3$)", "Capacity (m3)",
-                           "Product Capacity (m³)"],
+        "Capacity (yd\u00b3)": ["Capacity (yd\u00b3)/Filter", "Capacity ($yd^3$)", "Capacity"],
+        "Capacity (m\u00b3)":  ["Capacity ($m^3$)", "Capacity (m3)"],
         "Attachment Types": ["Attachment Types/NA"],
         "Bucket Type": ["Category", "Category/NA"],
         "Category": ["Bucket Type"],
+        "Bucket Width (mm)": ["Product Width (mm)", "Bucket Width (mm)"],
+        "Grapple Width (in)": ["Grapple Width (in)", "Grapple Width", "Grapple Size", "Product Width (in)"],
+        "Grapple Width (mm)": ["Grapple Width (mm)"],
+        "Compaction Width (in)": ["Compaction Width (in)", "Compaction Width", "Width (in)", "Plate Width (in)", "Product Width (in)"],
+        "Compaction Width (mm)": ["Compaction Width (mm)", "Width (mm)", "Product Width (mm)"],
+        # "Impluse" is a typo in the Google Sheet source — keep both spellings
+        "Impulse Force (lbs)": ["Impulse Force (lbs)", "Impulse Force (lb)",
+                                 "Impluse Force (lb)", "Impluse Force (lb)/Filter"],
+        "Impulse Force (tons)": ["Impulse Force (tons)", "Impulse Force (tn)", "Impulse Force (t)"],
         "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
         "Product Weight (kg)": ["Weight (kg)", "Rake Weight (kg)"],
         "Shipping Length (in)": ["Shipping Length (in)/NA", "Shipping Length (in)"],
@@ -546,7 +587,7 @@ def generate_grid_html(grids, output_path=None):
 <body>
 <div class="container">
   <h1>Attribute Grid — JM Attachments</h1>
-  <p class="subtitle">All products grouped by category. Attributes from: <span class="val-name">Parsed (extracted from Zoho Title)</span> | <span class="val-zoho">Zoho (actual fields)</span> | <span class="val-web">Website (WooCommerce)</span> | <span class="val-google">Google Sheets</span></p>
+  <p class="subtitle">All products grouped by category. Attributes from: <span class="val-name">From Title (extracted from Zoho website title)</span> | <span class="val-zoho">Zoho (actual fields)</span> | <span class="val-web">Website (WooCommerce)</span> | <span class="val-google">Google Sheets</span></p>
 
   <div class="stats">
     <div class="stat">
@@ -628,7 +669,7 @@ def generate_grid_html(grids, output_path=None):
         # Header row 2: sub-columns (Name, Zoho, Web, Google, Status)
         html += '          <tr>\n'
         for attr in attr_names:
-            html += '            <th class="sub sub-name">Parsed</th>\n'
+            html += '            <th class="sub sub-name">From Title</th>\n'
             html += '            <th class="sub sub-zoho">Zoho</th>\n'
             html += '            <th class="sub sub-web">Web</th>\n'
             html += '            <th class="sub sub-google">Google</th>\n'
