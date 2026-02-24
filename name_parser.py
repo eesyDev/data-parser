@@ -26,13 +26,30 @@ def parse_name(title, category=""):
     title = title.strip()
     attrs = {}
 
+    # --- Two-dimension size for thumbs: "26" x 45" Mechanical Thumb" ---
+    m_two_dims = re.match(
+        r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s*[xX]\s*(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s',
+        title
+    )
+    if m_two_dims and re.search(r'(?i)\bthumb\b', title):
+        attrs["Thumb Width (in)"] = f'{m_two_dims.group(1)}"'
+        attrs["Product Length (in)"] = f'{m_two_dims.group(2)}"'
+
     # --- Size (inches) ---
     # "42" Ditching Bucket", "75" 4 in 1 Bucket", "24" Digging Bucket"
     # Also handle smart quotes: " (\u201c), " (\u201d), ″ (\u2033)
     # Quote is REQUIRED to avoid matching "800 Joules..." as bucket size
-    m = re.match(r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s', title)
-    if m:
-        attrs["Bucket Size"] = f'{m.group(1)}"'
+    if not m_two_dims:
+        m = re.match(r'^(\d+(?:\.\d+)?)["\u201c\u201d\u2033]\s', title)
+        if m:
+            if re.search(r'(?i)\bauger\s+bit\b', title):
+                attrs["Auger Bit Size"] = f'{m.group(1)}"'
+            elif re.search(r'(?i)\bgrapple\b', title):
+                attrs["Grapple Width (in)"] = f'{m.group(1)}"'
+            elif re.search(r'(?i)\bplate\s+compactor\b|\bcompaction\s+wheel\b|\bvibratory\s+roller\b', title):
+                attrs["Compaction Width (in)"] = f'{m.group(1)}"'
+            else:
+                attrs["Bucket Size"] = f'{m.group(1)}"'
 
     # --- Size for pins/bits (mm diameter) ---
     # "60 mm Diameter Bucket Pin"
@@ -45,36 +62,46 @@ def parse_name(title, category=""):
 
     # --- Pin Size ---
     # "45mm | 38mm Pins", "45mm / 38mm Pins", "45mm Pins"
-    m_dual_pin = re.search(r'(\d+)\s*mm\s*[|/]\s*(\d+)\s*mm\s*[Pp]ins?', title)
+    m_dual_pin = re.search(r'(\d+)\s*mm\s*[|/]\s*(\d+)\s*mm\s*[Pp]ins?', title, re.IGNORECASE)
     if m_dual_pin:
         attrs["Pin Size"] = f"{m_dual_pin.group(1)}mm | {m_dual_pin.group(2)}mm"
     else:
-        m_pin = re.search(r'(\d+)\s*mm\s*[Pp]ins?', title)
+        m_pin = re.search(r'(\d+)\s*mm\s*[Pp]ins?', title, re.IGNORECASE)
         if m_pin:
             attrs["Pin Size"] = f"{m_pin.group(1)}mm"
+        # Hydraulic/Mechanical Thumb: bare "80mm" at start or after Thumb = pin size
+        elif re.search(r'(?i)\bthumb\b', title):
+            m_thumb_mm = re.match(r'^(\d+)\s*mm\b', title)
+            if not m_thumb_mm:
+                m_thumb_mm = re.search(r'(?i)\bthumb\b.*?(\d+)\s*mm', title)
+            if m_thumb_mm:
+                attrs["Pin Size"] = f"{m_thumb_mm.group(1)}mm"
 
     # --- Carrier Weight Class ---
     # "for 3 - 4.5 Tons Mini Excavators", "for 16 – 25 Tons Excavators"
     # Also handle en-dash (–), em-dash (—)
     m_weight = re.search(
-        r'for\s+([\d.]+ ?[-\u2013\u2014] ?[\d.]+)\s*[Tt]ons?\s+'
-        r'(Mini\s+Excavators?|Backhoe(?:\s+Loaders?)?|Wheel\s+Loaders?|Skid\s+Steers?|Excavators?)',
-        title
+        r'for\s+([\d.]+\s*(?:[-\u2013\u2014]|to)\s*[\d.]+)\s*[Tt]ons?'
+        r'(?:\s+(Mini\s+Excavators?|Backhoe(?:\s+Loaders?)?|Wheel\s+Loaders?|Skid\s+Steers?|Excavators?|Weight\s+Class))?',
+        title,
+        re.IGNORECASE
     )
     if m_weight:
-        tons = m_weight.group(1).replace(" ", "").replace("\u2013", "-").replace("\u2014", "-")
+        tons = m_weight.group(1).replace("\u2013", "-").replace("\u2014", "-")
+        tons = re.sub(r'\s*to\s*', '-', tons, flags=re.IGNORECASE).replace(" ", "")
         attrs["Carrier Weight Class"] = f"{tons} tons"
-        machine_raw = m_weight.group(2).strip().lower()
-        if "mini excavat" in machine_raw:
-            attrs["Machine Type"] = "Mini Excavators"
-        elif "wheel" in machine_raw:
-            attrs["Machine Type"] = "Wheel Loader"
-        elif "skid" in machine_raw:
-            attrs["Machine Type"] = "Skid Steer"
-        elif "backhoe" in machine_raw:
-            attrs["Machine Type"] = "Backhoe Loader"
-        else:
-            attrs["Machine Type"] = "Excavators"
+        machine_raw = (m_weight.group(2) or "").strip().lower()
+        if machine_raw and "weight class" not in machine_raw:
+            if "mini excavat" in machine_raw:
+                attrs["Machine Type"] = "Mini Excavators"
+            elif "wheel" in machine_raw:
+                attrs["Machine Type"] = "Wheel Loader"
+            elif "skid" in machine_raw:
+                attrs["Machine Type"] = "Skid Steer"
+            elif "backhoe" in machine_raw:
+                attrs["Machine Type"] = "Backhoe Loader"
+            else:
+                attrs["Machine Type"] = "Excavators"
 
     # --- Machine Type (without weight range) ---
     # "for Backhoe Loaders", "for Wheel Loaders", "for Skid Steers", etc.
@@ -98,9 +125,11 @@ def parse_name(title, category=""):
     # those are product categories captured by Product Type above.
     head_style_patterns = [
         (r'(?i)John\s+Deere\s+Wedge\s+Lock', "John Deere Wedge Lock"),
+        (r'(?i)John\s+Deere\s+Style', "John Deere Wedge Lock"),
         (r'(?i)Kubota\s+Wedge\s+(?:Lock\s+)?(?:Coupler\s+)?Style', "Kubota Wedge Lock"),
         (r'(?i)Kubota\s+Wedge\s+Lock', "Kubota Wedge Lock"),
         (r'(?i)Bobcat\s+X-?Change', "Bobcat X-Change"),
+        (r'(?i)Bobcat\s+Style', "Bobcat Style"),
         (r'(?i)Cat(?:erpillar)?\s+Pin\s+Grabber', "Cat Pin Grabber"),
         (r'(?i)No\s+Quick\s+Coupler', "Pin On"),
         (r'(?i)Pin\s+On', "Pin On"),
@@ -175,6 +204,33 @@ def parse_name(title, category=""):
         if re.search(pattern, title):
             attrs["Product Type"] = type_name
             break
+
+    # --- Impulse Force ---
+    # "800 ft-lbs Impulse Force", "800 lbs Impulse Force", "Impulse Force: 800 lbs"
+    m_imp_lbs = re.search(
+        r'([\d,]+)\s*(?:ft[-\u00b7]?lbs?|lbs?)\s+(?:Impulse|Impact)\s+Force',
+        title, re.IGNORECASE
+    )
+    if not m_imp_lbs:
+        m_imp_lbs = re.search(
+            r'(?:Impulse|Impact)\s+Force[:\s]+([\d,]+)\s*(?:ft[-\u00b7]?lbs?|lbs?)',
+            title, re.IGNORECASE
+        )
+    if m_imp_lbs:
+        num = m_imp_lbs.group(1).replace(",", "")
+        attrs["Impulse Force (lbs)"] = f"{num} lbs"
+
+    m_imp_tons = re.search(
+        r'([\d.]+)\s*tons?\s+(?:Impulse|Impact)\s+Force',
+        title, re.IGNORECASE
+    )
+    if not m_imp_tons:
+        m_imp_tons = re.search(
+            r'(?:Impulse|Impact)\s+Force[:\s]+([\d.]+)\s*tons?',
+            title, re.IGNORECASE
+        )
+    if m_imp_tons:
+        attrs["Impulse Force (tons)"] = f"{m_imp_tons.group(1)} tons"
 
     # --- Hex size for auger bits ---
     m_hex = re.search(r'(\d+)["\u201c\u201d\u2033]\s*Hex', title)
@@ -263,7 +319,7 @@ def _load_zoho_attrs():
             "cf_product_weight_lbs": "Product Weight (lbs)",
             "cf_product_width_mm": "Product Width (mm)",
             "cf_product_width_in": "Product Width (in)",
-            "cf_capacity_yds": "Product Capacity (yds)",
+            "cf_capacity_yds": "Capacity (yd\u00b3)",
             "cf_product_capacity_m3": "Capacity (m³)",
             "cf_teeth_type": "Teeth Type",
             "cf_center_to_center": "Center to Center",
@@ -277,6 +333,25 @@ def _load_zoho_attrs():
             val = item.get(cf_key, "")
             if val and str(val).strip() and str(val).lower() not in ("false", ""):
                 attrs[display_name] = str(val).strip()
+        # Shipping dimensions from Zoho (length/width/height in inches, weight in lb)
+        dim_unit = item.get("dimension_unit", "in")
+        for field, attr_name in [("length", "Shipping Length (in)"),
+                                  ("width",  "Shipping Width (in)"),
+                                  ("height", "Shipping Height (in)")]:
+            raw = item.get(field)
+            if raw is not None and str(raw).strip() not in ("", "0", "0.0"):
+                val_f = float(raw)
+                if dim_unit == "cm":
+                    val_f = round(val_f / 2.54, 2)
+                elif dim_unit == "mm":
+                    val_f = round(val_f / 25.4, 2)
+                attrs[attr_name] = str(round(val_f, 2))
+        raw_w = item.get("weight")
+        if raw_w is not None and str(raw_w).strip() not in ("", "0", "0.0"):
+            w = float(raw_w)
+            if item.get("weight_unit", "lb") == "kg":
+                w = round(w * 2.20462, 2)
+            attrs["Shipping Weight (lb)"] = str(round(w, 2))
         result[sku] = attrs
     return result
 
@@ -287,16 +362,31 @@ def _load_website_attrs():
         return {}
     df = pd.read_csv(config.WEBSITE_CSV, dtype=str, low_memory=False)
     result = {}
+    meta_col = "Meta: _custom_product_specs_data"
     for _, row in df.iterrows():
         sku = str(row.get("SKU", "")).strip().upper()
         if not sku:
             continue
         attrs = {}
+        # Standard WooCommerce attribute columns
         for i in range(1, 24):
             name_col = f"Attribute {i} name"
             val_col = f"Attribute {i} value(s)"
             if name_col in df.columns and pd.notna(row.get(name_col)):
                 attrs[row[name_col].strip()] = str(row.get(val_col, "")).strip()
+        # Parse JSON meta column (contains Capacity (ydu00b3), Capacity (mu00b3), etc.)
+        if meta_col in df.columns:
+            raw_meta = row.get(meta_col, "")
+            if pd.notna(raw_meta) and str(raw_meta).strip():
+                try:
+                    meta = json.loads(str(raw_meta))
+                    for k, v in meta.items():
+                        # Normalize literal "u00b3" text → actual ³ character
+                        clean_key = str(k).replace("u00b3", "\u00b3")
+                        clean_val = str(v).replace("u00b3", "\u00b3")
+                        attrs[clean_key] = clean_val
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    pass
         result[sku] = attrs
     return result
 
@@ -354,6 +444,8 @@ def _normalize_value(val):
     s = s.replace('\u2018', "'").replace('\u2019', "'").replace('\u2032', "'")
     # Normalize dashes
     s = s.replace('\u2013', '-').replace('\u2014', '-')
+    # Normalize capacity units: m3 == m³, yd3 == yd³
+    s = s.replace('yd\u00b3', 'yd3').replace('m\u00b3', 'm3')
     # Remove trailing units for comparison
     s = re.sub(r'\s*(mm|tons?|lbs?|in|inches|")\s*$', '', s)
     # Collapse spaces around mm (40mm == 40 mm)
@@ -383,6 +475,13 @@ ATTR_MAP = {
                        "Auger Bit Width (mm)"],
     "Length (mm)": ["Length (mm)", "Pin Length (mm)"],
     "Hex Size": ["Hex Size"],
+    "Auger Bit Size": ["Auger Bit Size", "Auger Size", "Bit Size", "Product Width (in)"],
+    "Grapple Width (in)": ["Grapple Width (in)", "Grapple Width", "Grapple Size", "Product Width (in)"],
+    "Grapple Width (mm)": ["Grapple Width (mm)"],
+    "Compaction Width (in)": ["Compaction Width (in)", "Compaction Width", "Plate Width (in)", "Product Width (in)"],
+    "Compaction Width (mm)": ["Compaction Width (mm)", "Product Width (mm)"],
+    "Impulse Force (lbs)": ["Impulse Force (lbs)", "Impulse Force (lb)", "Impulse Force"],
+    "Impulse Force (tons)": ["Impulse Force (tons)", "Impulse Force (ton)", "Impulse Force (t)"],
     "Product Capacity (yds)": ["Capacity (yd³)", "Capacity (yd³)/Filter",
                                 "Capacity ($yd^3$)", "Capacity (yds)"],
     "Capacity (m³)": ["Capacity (m³)", "Capacity ($m^3$)", "Capacity (m3)"],
@@ -390,6 +489,8 @@ ATTR_MAP = {
                                 "Rear Pin Size (mm)", "Back Pin Size (mm)"],
     "Attachment Types": ["Attachment Types", "Attachment Types/NA"],
     "Product Weight (lbs)": ["Weight (lb)", "Weight (lbs)", "Rake Weight (lb)"],
+    "Thumb Width (in)": ["Thumb Width (in)", "Thumb Width"],
+    "Product Length (in)": ["Product Length (in)", "Product Length"],
 }
 
 
@@ -423,11 +524,12 @@ def _match_value(parsed_val, actual_val):
           "no quick coupler pin on coupler", "backhoe pin on style",
           "backhoe pin on coupler", "bolt-on adapter",
           "no quick coupler", "no coupler"}, True),
-        ({"bobcat x-change coupler", "bobcat x-change", "bobcat style",
-          "bobcat x-change style", "bobcat x change"}, True),
+        ({"bobcat x-change coupler", "bobcat x-change",
+          "bobcat x-change style", "bobcat x change",
+          "bobcat style", "bobcat style coupler"}, True),
         ({"john deere wedge lock coupler", "john deere wedge lock", "john deere style",
           "jd wedge lock", "deere wedge lock coupler", "deere style",
-          "john deere wedge lock style"}, True),
+          "john deere wedge lock style", "john deere style coupler"}, True),
         ({"kubota wedge lock coupler", "kubota wedge lock", "kubota style",
           "kubota wedge style", "kubota wedge lock style"}, True),
         ({"cat pin grabber coupler", "cat pin grabber", "cat pin grabber style"}, True),
@@ -437,7 +539,8 @@ def _match_value(parsed_val, actual_val):
         ({"severe duty bucket", "severe duty skeleton bucket with teeth",
           "severe duty skeleton bucket"}, True),
         ({"backhoe", "backhoe loader", "backhoe loaders",
-          "backhoe loader attachment", "backhoe attachment"}, True),
+          "backhoe loader attachment", "backhoe attachment",
+          "loader backoe attachment", "loader backhoe attachment"}, True),
         ({"wheel loader", "wheel loaders"}, True),
         ({"excavators", "excavator"}, True),
         ({"v-bottom bucket", "v-bottom buckets"}, True),
@@ -465,20 +568,29 @@ def _match_value(parsed_val, actual_val):
         # For ranges like "3-4.5" vs "3 - 4.5"
         if p_nums == a_nums:
             return True
-        # Single number comparison — 2% relative tolerance
+        # Single number comparison — 0.1% relative tolerance (floating point only)
         if len(p_nums) == 1 and len(a_nums) == 1:
             try:
                 pn = float(p_nums[0])
                 an = float(a_nums[0])
-                # Unit conversion: yd³ ↔ m³ (1 yd³ = 0.7646 m³)
-                if "yd" in p and "m" in a and "yd" not in a:
-                    pn = pn * 0.7646
-                elif "yd" in a and "m" in p and "yd" not in p:
-                    an = an * 0.7646
                 max_val = max(abs(pn), abs(an))
                 if max_val == 0:
                     return pn == an
-                return abs(pn - an) / max_val <= 0.02
+                if abs(pn - an) / max_val <= 0.001:
+                    return True
+                # Inch ↔ mm conversion: 40" == 1016 mm (25.4 mm per inch)
+                p_str = str(parsed_val).lower()
+                a_str = str(actual_val).lower()
+                p_inch = bool(re.search(r'["\u2033\u201d]|\bin(?:ch|ches)?\b', p_str))
+                a_inch = bool(re.search(r'["\u2033\u201d]|\bin(?:ch|ches)?\b', a_str))
+                p_mm = bool(re.search(r'\bmm\b', p_str))
+                a_mm = bool(re.search(r'\bmm\b', a_str))
+                if p_inch and a_mm:
+                    if abs(pn * 25.4 - an) / max(abs(pn * 25.4), abs(an), 1) <= 0.01:
+                        return True
+                elif a_inch and p_mm:
+                    if abs(an * 25.4 - pn) / max(abs(an * 25.4), abs(pn), 1) <= 0.01:
+                        return True
             except ValueError:
                 pass
     # Contains check
