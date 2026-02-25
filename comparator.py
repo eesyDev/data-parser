@@ -134,18 +134,36 @@ def find_price_differences(merged, sources):
     return pd.DataFrame(diff_rows)
 
 
+def _normalize_name(s):
+    """Normalize quotes and dashes for name comparison to avoid false positives."""
+    if not s:
+        return ""
+    s = str(s).strip()
+    for char, replacement in [
+        ('\u201c', '"'), ('\u201d', '"'), ('\u2033', '"'),
+        ('\u2018', "'"), ('\u2019', "'"), ('\u2032', "'"),
+        ('\u2013', '-'), ('\u2014', '-'), ('\u00a0', ' '),
+    ]:
+        s = s.replace(char, replacement)
+    return s
+
+
 def find_name_differences(merged, sources):
     """
     Find products with different names (fuzzy matching).
+    Only compares sources with client-facing names (zoho, website) — Google uses
+    internal names and is excluded from the name comparison.
     """
     source_names = list(sources.keys())
+    # Google uses internal (Variation Name) not client-facing — exclude from name comparison
+    name_sources = [s for s in source_names if s != "google"]
     diff_rows = []
 
     for _, row in merged.iterrows():
         names = {}
-        for s in source_names:
+        for s in name_sources:
             if row.get(f"in_{s}", False) and row.get(f"name_{s}"):
-                names[s] = row[f"name_{s}"]
+                names[s] = _normalize_name(row[f"name_{s}"])
 
         if len(names) < 2:
             continue
@@ -164,7 +182,8 @@ def find_name_differences(merged, sources):
         if has_diff:
             diff_row = {"sku": row["sku"]}
             for s in source_names:
-                diff_row[f"name_{s}"] = names.get(s, "")
+                # Still include google name in the output row for reference
+                diff_row[f"name_{s}"] = row.get(f"name_{s}", "") or ""
             diff_rows.append(diff_row)
 
     return pd.DataFrame(diff_rows)
