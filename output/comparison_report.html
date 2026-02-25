@@ -24,8 +24,19 @@
     color: var(--text);
     line-height: 1.5;
     padding: 20px;
+    overflow-x: hidden;
   }
   .container { max-width: 1600px; margin: 0 auto; }
+  .page-nav {
+    display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .page-nav a {
+    padding:7px 16px; border-radius:8px; font-size:0.85rem; font-weight:500;
+    text-decoration:none; border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s;
+  }
+  .page-nav a:hover { color:var(--text); border-color:var(--accent); }
+  .page-nav a.current { color:var(--accent); border-color:var(--accent); background:rgba(59,130,246,0.1); }
   h1 {
     font-size: 1.75rem;
     font-weight: 700;
@@ -217,6 +228,12 @@
 </head>
 <body>
 <div class="container">
+  <nav class="page-nav">
+    <a href="comparison_report.html" class="current">Comparison Report</a>
+    <a href="attribute_grid.html">Attribute Grid</a>
+    <a href="head_type_report.html">Head Type (JD / Bobcat / Kubota)</a>
+    <a href="all_products.html">All Products</a>
+  </nav>
   <h1>Product Comparison — JM Attachments</h1>
   <p class="subtitle">Zoho Inventory vs Website (WooCommerce) vs Google Sheets</p>
 
