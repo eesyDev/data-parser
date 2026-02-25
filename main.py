@@ -54,6 +54,11 @@ def main():
     ht_rows = grid_view.build_head_type_grid()
     grid_view.generate_head_type_html(ht_rows)
 
+    # 8. All products flat table
+    print("\n8. All products flat table...")
+    flat_rows = grid_view.build_all_products_flat()
+    grid_view.generate_all_products_html(flat_rows)
+
     print("\nDone!")
 
 

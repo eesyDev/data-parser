@@ -382,6 +382,7 @@ def generate_html(results, output_path=None):
     <a href="comparison_report.html" class="current">Comparison Report</a>
     <a href="attribute_grid.html">Attribute Grid</a>
     <a href="head_type_report.html">Head Type (JD / Bobcat / Kubota)</a>
+    <a href="all_products.html">All Products</a>
   </nav>
   <h1>Product Comparison — JM Attachments</h1>
   <p class="subtitle">Zoho Inventory vs Website (WooCommerce){' vs Google Sheets' if 'google' in source_names else ''}</p>

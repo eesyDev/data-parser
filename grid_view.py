@@ -17,9 +17,12 @@ import name_parser
 COMMON_ATTRS = [
     "Bucket Size",
     "Pin Size",
+    "Front Pin Length (mm)",
+    "Rear Pin Length (mm)",
     "Carrier Weight Class",
     "Machine Type",
     "Head Style",
+    "Shipping Weight (lb)",
 ]
 
 # Category-specific extra attributes
@@ -99,6 +102,8 @@ DATA_ONLY_ATTRS = {
     "Add-ons Included",
     "Front Ear to Ear",
     "Rear Ear to Ear",
+    "Front Pin Length (mm)",
+    "Rear Pin Length (mm)",
     "Shipping Length (in)",
     "Shipping Width (in)",
     "Shipping Height (in)",
@@ -162,7 +167,10 @@ def build_grid():
             continue
 
         # Determine relevant attributes for this category
-        attr_keys = [a for a in COMMON_ATTRS if not (a == "Bucket Size" and cat in NO_BUCKET_SIZE)]
+        attr_keys = [a for a in COMMON_ATTRS if not (
+            a in ("Bucket Size", "Front Pin Length (mm)", "Rear Pin Length (mm)")
+            and cat in NO_BUCKET_SIZE
+        )]
         if cat in CATEGORY_ATTRS:
             attr_keys = CATEGORY_ATTRS[cat] + attr_keys
 
@@ -395,7 +403,10 @@ def _find_source_value(attrs, attr_name):
         "Carrier Weight Class": ["Carrier Weight Class (tn)", "Carrier Weight Class "],
         "Head Style": ["Coupler Head Type", "Head Style", "Coupler Type", "Coupler Type/Filter",
                        "Head Type"],
-        "Machine Type": ["Machine Type"],
+        "Machine Type": ["Machine Type", "Attachment Types", "Attachment Types/NA"],
+        "Fits To": ["Fits To"],
+        "Front Ear to Ear": ["Front Ear to Ear (mm)", "Front Ear to Ear Distance",
+                              "Front Ear to Ear Distance (mm)"],
         # Capacity — strict per-unit aliases, no cross-unit lookup
         "Capacity (yd\u00b3)": ["Capacity (yd\u00b3)/Filter", "Capacity ($yd^3$)", "Capacity"],
         "Capacity (m\u00b3)":  ["Capacity ($m^3$)", "Capacity (m3)"],
@@ -418,6 +429,8 @@ def _find_source_value(attrs, attr_name):
         "Shipping Height (in)": ["Shipping Height (in)/NA", "Shipping Height (in)"],
         "Shipping Weight (lb)": ["Shipping Weight (lb)/NA", "Shipping Weight (lb)", "Shipping Weight (lbs)", "Shipping Weight (lbs)/NA"],
         "Shipping Weight (kg)": ["Shipping Weight (kg)/NA", "Shipping Weight (kg)"],
+        "Front Pin Length (mm)": ["Front Pin Length (mm)/NA", "Front Pin Length (mm)", "Front Pin Length"],
+        "Rear Pin Length (mm)":  ["Rear Pin Length (mm)/NA",  "Rear Pin Length (mm)",  "Rear Pin Length"],
         "Diameter (mm)": ["Chisel Bit Size", "Chisel Bit Diameter (mm)",
                           "Bit Diameter (mm)", "Pin Diameter (mm)"],
         "Outer Diameter": ["Outer Diameter (mm)/Filter", "Outer Diameter (mm)"],
@@ -502,7 +515,6 @@ def generate_grid_html(grids, output_path=None):
   /* Category nav */
   .cat-nav {{
     display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;
-    position:sticky; top:0; background:var(--bg); padding:8px 0; z-index:100;
   }}
   .cat-btn {{
     padding:6px 12px; border-radius:8px; cursor:pointer;
@@ -601,6 +613,7 @@ def generate_grid_html(grids, output_path=None):
     <a href="comparison_report.html">Comparison Report</a>
     <a href="attribute_grid.html" class="current">Attribute Grid</a>
     <a href="head_type_report.html">Head Type (JD / Bobcat / Kubota)</a>
+    <a href="all_products.html">All Products</a>
   </nav>
   <h1>Attribute Grid — JM Attachments</h1>
   <p class="subtitle">All products grouped by category. Attributes from: <span class="val-name">From Title (extracted from Zoho website title)</span> | <span class="val-zoho">Zoho (actual fields)</span> | <span class="val-web">Website (WooCommerce)</span> | <span class="val-google">Google Sheets</span></p>
@@ -839,6 +852,440 @@ def _esc(text):
             .replace('"', "&quot;"))
 
 
+# ─── All Products flat view ──────────────────────────────────────────────────
+
+# (display_name, attr_key) — exact order from the spec
+_FLAT_COLUMNS = [
+    # "Attachment Types" (Google) covered via alias in Machine Type
+    ("Machine Type",           "Machine Type"),
+    ("Head Style",             "Head Style"),
+    ("Bucket Size",            "Bucket Size"),
+    ("Carrier Weight Class",   "Carrier Weight Class"),
+    # "Front Pin Diameter (mm)" covered via alias in Pin Size
+    ("Pin Size",               "Pin Size"),
+    ("Front Pin Length (mm)",  "Front Pin Length (mm)"),
+    ("Rear Pin Diameter (mm)", "Rear Pin Diameter (mm)"),
+    ("Rear Pin Length (mm)",   "Rear Pin Length (mm)"),
+    ("Front Ear to Ear",       "Front Ear to Ear"),
+    ("Rear Ear to Ear",        "Rear Ear to Ear"),
+    ("Center to Center",       "Center to Center"),
+    ("Shipping Height (in)",   "Shipping Height (in)"),
+    ("Shipping Length (in)",   "Shipping Length (in)"),
+    ("Shipping Width (in)",    "Shipping Width (in)"),
+    ("Shipping Weight (lb)",   "Shipping Weight (lb)"),
+]
+
+
+def build_all_products_flat():
+    """Build flat list of all active Zoho products with per-source attribute values."""
+    print("  Building all-products flat table...")
+
+    zoho_titles  = name_parser._load_zoho_website_titles()
+    zoho_attrs   = name_parser._load_zoho_attrs()
+    web_attrs    = name_parser._load_website_attrs()
+    google_attrs = name_parser._load_google_attrs()
+
+    zoho_cache = {}
+    cache_path = os.path.join(config.DATA_DIR, "zoho_api_cache.json")
+    if os.path.exists(cache_path):
+        with open(cache_path, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                if str(item.get("status", "")).lower() == "inactive":
+                    continue
+                sku = str(item.get("sku", "")).strip().upper()
+                if sku:
+                    zoho_cache[sku] = item
+
+    web_products = {}
+    if os.path.exists(config.WEBSITE_CSV):
+        df = pd.read_csv(config.WEBSITE_CSV, dtype=str, low_memory=False)
+        for _, row in df.iterrows():
+            sku = str(row.get("SKU", "")).strip().upper()
+            if sku:
+                web_products[sku] = {"name": row.get("Name", ""), "price": row.get("Regular price", "")}
+
+    rows = []
+    for sku in sorted(zoho_cache.keys()):
+        item = zoho_cache[sku]
+        title = (zoho_titles.get(sku, {}).get("website_title", "")
+                 or str(item.get("name", "")))
+        cat = item.get("category_name", "")
+        z_attrs = zoho_attrs.get(sku, {})
+        w_attrs = web_attrs.get(sku, {})
+        g_attrs = google_attrs.get(sku, {})
+        web_prod = web_products.get(sku, {})
+
+        parsed = name_parser.parse_name(title, cat) if title else {}
+
+        google_name = ""
+        for key in ["Variation Name", "Variation Name/NA", "Product Name", "Name"]:
+            if key in g_attrs:
+                google_name = g_attrs[key]
+                break
+
+        row = {
+            "SKU": sku,
+            "Zoho Title": title[:100],
+            "Status": str(item.get("status", "")).capitalize(),
+            "Category": cat,
+            "Website Name": str(web_prod.get("name", ""))[:100],
+            "Google Name": str(google_name)[:100],
+            "In Web": "Yes" if sku in web_attrs else "No",
+            "In Google": "Yes" if sku in google_attrs else "No",
+        }
+
+        for display_name, attr_key in _FLAT_COLUMNS:
+            nv = _find_parsed_value(parsed, attr_key)
+            zv = _find_source_value(z_attrs, attr_key)
+            wv = _find_source_value(w_attrs, attr_key)
+            gv = _find_source_value(g_attrs, attr_key)
+            row[f"{display_name} [Name]"]   = nv
+            row[f"{display_name} [Zoho]"]   = zv
+            row[f"{display_name} [Web]"]    = wv
+            row[f"{display_name} [Google]"] = gv
+            vals = [v for v in [nv, zv, wv, gv] if v and str(v).strip() not in ("", "nan", "none")]
+            if not vals:
+                st = ""
+            elif len(vals) == 1:
+                st = "PARTIAL"
+            else:
+                st = "OK" if _all_match(vals) else "MISMATCH"
+            row[f"{display_name} [Status]"] = st
+
+        rows.append(row)
+
+    print(f"    {len(rows)} products")
+    return rows
+
+
+_NAV_ALL = """  <nav class="page-nav">
+    <a href="comparison_report.html">Comparison Report</a>
+    <a href="attribute_grid.html">Attribute Grid</a>
+    <a href="head_type_report.html">Head Type (JD / Bobcat / Kubota)</a>
+    <a href="all_products.html">All Products</a>
+  </nav>
+"""
+
+
+def generate_all_products_html(rows, output_path=None):
+    """Generate all-products HTML table with per-source comparison columns."""
+    output_path = output_path or os.path.join(config.OUTPUT_DIR, "all_products.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    total = len(rows)
+    mismatches = sum(
+        1 for r in rows
+        for col, _ in _FLAT_COLUMNS
+        if r.get(f"{col} [Status]") == "MISMATCH"
+    )
+
+    SUB = 'font-size:0.65rem;background:rgba(0,0,0,0.2);text-align:center'
+
+    def fmt_status(s):
+        if not s or s.lower() in ("", "nan", "none"):
+            return '<span style="color:var(--muted)">—</span>'
+        cls = "tag-active" if s.lower() == "active" else "tag-inactive"
+        return f'<span class="{cls}">{_esc(s)}</span>'
+
+    def val_td(val, extra_cls=""):
+        v = str(val).strip() if val else ""
+        if v and v.lower() not in ("nan", "none"):
+            return f'<td class="{extra_cls}">{_esc(v)}</td>'
+        return f'<td class="{extra_cls}" style="color:var(--muted)">—</td>'
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Products — JM Attachments</title>
+<style>
+  :root {{
+    --bg:#0f172a; --card:#1e293b; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6;
+    --green:#22c55e; --red:#ef4444; --orange:#f59e0b; --purple:#a78bfa;
+  }}
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.4; padding:20px;
+    font-size:13px; overflow-x:hidden;
+  }}
+  h1 {{ font-size:1.5rem; margin-bottom:4px; }}
+  .subtitle {{ color:var(--muted); margin-bottom:16px; }}
+  .page-nav {{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }}
+  .page-nav a {{
+    padding:7px 16px; border-radius:8px; font-size:0.85rem; font-weight:500;
+    text-decoration:none; border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s;
+  }}
+  .page-nav a:hover {{ color:var(--text); border-color:var(--accent); }}
+  .page-nav a.current {{ color:var(--accent); border-color:var(--accent); background:rgba(59,130,246,0.1); }}
+  .stats {{ display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }}
+  .stat {{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; }}
+  .stat .num {{ font-size:1.6rem; font-weight:700; }}
+  .stat .label {{ color:var(--muted); font-size:0.8rem; }}
+  .grid-wrap {{ background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; max-width:calc(100vw - 40px); }}
+  .search {{ padding:8px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }}
+  .search input {{
+    padding:6px 10px; border-radius:6px; border:1px solid var(--border);
+    background:var(--bg); color:var(--text); font-size:0.85rem; width:340px;
+  }}
+  .filter-btn {{
+    padding:5px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem;
+    border:1px solid var(--border); background:var(--card); color:var(--muted); transition:all 0.15s;
+  }}
+  .filter-btn:hover {{ border-color:var(--accent); color:var(--text); }}
+  .filter-btn.active {{ background:var(--red); color:#fff; border-color:var(--red); }}
+  .grid-scroll {{ overflow-x:auto; }}
+  table {{ border-collapse:separate; border-spacing:0; font-size:0.78rem; white-space:nowrap; }}
+  th {{
+    background:#0d1a2e; padding:6px 8px; text-align:left;
+    font-weight:600; color:var(--muted); text-transform:uppercase; font-size:0.7rem;
+    letter-spacing:0.03em; border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:10;
+  }}
+  th.sub {{ top:28px; }}
+  td {{ padding:5px 8px; border-bottom:1px solid rgba(51,65,85,0.5); }}
+  tr:hover {{ background:rgba(255,255,255,0.03); }}
+  .sc {{ position:sticky; z-index:5; background:var(--card); }}
+  .sc0 {{ left:0; min-width:80px; }}
+  .sc1 {{ left:80px; min-width:220px; border-right:1px solid var(--border); }}
+  th.sc {{ z-index:15; background:#0d1a2e; }}
+  tr:hover .sc {{ background:#253349; }}
+  th.attr-group {{
+    background:#162035; color:var(--accent);
+    text-align:center; border-left:2px solid var(--accent); font-size:0.7rem;
+  }}
+  th.sub {{ font-size:0.65rem; color:var(--muted); text-align:center; }}
+  th.sub-name {{ color:#60a5fa; }} th.sub-zoho {{ color:#fbbf24; }}
+  th.sub-web {{ color:#4ade80; }} th.sub-google {{ color:#c084fc; }}
+  .cell-ok  {{ background:rgba(34,197,94,0.08); }}
+  .cell-mismatch {{ background:rgba(239,68,68,0.12); }}
+  .cell-partial  {{ background:rgba(245,158,11,0.08); }}
+  .cell-empty {{ color:var(--muted); }}
+  .val-name {{ color:#93c5fd; }} .val-zoho {{ color:#fbbf24; }}
+  .val-web  {{ color:#86efac; }} .val-google {{ color:#d8b4fe; }}
+  .tag-ok  {{ color:var(--green); font-weight:600; }}
+  .tag-mis {{ color:var(--red);   font-weight:600; }}
+  .tag-part {{ color:var(--orange); }}
+  .tag-yes {{ color:var(--green); }} .tag-no {{ color:var(--red); }}
+  .tag-active {{ color:var(--green); }} .tag-inactive {{ color:var(--red); }}
+  .cat-nav {{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }}
+  .cat-btn {{ padding:5px 12px; border-radius:8px; cursor:pointer; background:var(--card); border:1px solid var(--border); color:var(--muted); font-size:0.8rem; text-decoration:none; transition:all 0.15s; }}
+  .cat-btn:hover {{ color:var(--text); border-color:var(--accent); }}
+  .cat-btn .cnt {{ color:var(--accent); margin-left:4px; }}
+  .cat-section {{ margin-bottom:28px; }}
+  .cat-header {{ font-size:1.05rem; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:8px; padding-top:8px; cursor:pointer; user-select:none; }}
+  .cat-header .cnt {{ background:rgba(59,130,246,0.15); color:var(--accent); padding:2px 8px; border-radius:6px; font-size:0.8rem; }}
+  .cat-header .toggle {{ font-size:0.8rem; color:var(--muted); margin-left:6px; }}
+  .cat-body {{ display:none; }}
+  .cat-section.expanded .cat-body {{ display:block; }}
+</style>
+</head>
+<body>
+{_NAV_ALL.replace('href="all_products.html"', 'href="all_products.html" class="current"')}
+  <h1>All Products — JM Attachments</h1>
+  <p class="subtitle">All active products · <span style="color:#93c5fd">From Title</span> | <span style="color:#fbbf24">Zoho</span> | <span style="color:#4ade80">Website</span> | <span style="color:#c084fc">Google Sheets</span></p>
+
+"""
+
+    # Group by category, sort by size desc
+    from collections import defaultdict
+    by_cat = defaultdict(list)
+    for r in rows:
+        by_cat[r["Category"]].append(r)
+    cat_list = sorted(by_cat.keys(), key=lambda c: -len(by_cat[c]))
+
+    total_mis = sum(
+        1 for r in rows
+        for col, _ in _FLAT_COLUMNS
+        if r.get(f"{col} [Status]") == "MISMATCH"
+    )
+
+    html += f"""  <div class="stats">
+    <div class="stat"><div class="num" style="color:var(--accent)">{total}</div><div class="label">Active products</div></div>
+    <div class="stat"><div class="num" style="color:var(--accent)">{len(cat_list)}</div><div class="label">Categories</div></div>
+    <div class="stat"><div class="num" style="color:var(--red)">{total_mis}</div><div class="label">Mismatches</div></div>
+    <div class="stat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <button class="filter-btn" onclick="toggleGlobalMismatch(this)">Mismatches Only</button>
+      <button class="filter-btn" onclick="expandAll()">Expand All</button>
+      <button class="filter-btn" onclick="collapseAll()">Collapse All</button>
+    </div>
+  </div>
+
+  <div class="cat-nav">
+"""
+    for cat in cat_list:
+        cnt = len(by_cat[cat])
+        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
+        html += f'    <a class="cat-btn" href="#{safe_id}" onclick="expandCat(\'{safe_id}\')">{_esc(cat)}<span class="cnt">{cnt}</span></a>\n'
+    html += '  </div>\n'
+
+    SUFFIXES = [("[Name]", "sub-name", "val-name"),
+                ("[Zoho]", "sub-zoho", "val-zoho"),
+                ("[Web]",  "sub-web",  "val-web"),
+                ("[Google]","sub-google","val-google")]
+    SUB_LABELS = {"[Name]": "From Title", "[Zoho]": "Zoho",
+                  "[Web]": "Web", "[Google]": "Google"}
+
+    def _has_any(cat_rows, col, suffix):
+        return any(
+            str(r.get(f"{col} {suffix}", "") or "").strip()
+            not in ("", "nan", "none")
+            for r in cat_rows
+        )
+
+    def _thead_cat(active_map):
+        t = '        <thead>\n          <tr>\n'
+        t += '            <th rowspan="2" class="sc sc0">SKU</th>\n'
+        t += '            <th rowspan="2" class="sc sc1">Zoho Title (website)</th>\n'
+        t += '            <th rowspan="2">Status</th>\n'
+        t += '            <th rowspan="2">Website Name</th>\n'
+        t += '            <th rowspan="2">Google Name</th>\n'
+        t += '            <th rowspan="2">In Web</th>\n'
+        t += '            <th rowspan="2">In Google</th>\n'
+        for col, _ in _FLAT_COLUMNS:
+            suf_list = active_map.get(col, [])
+            if not suf_list:
+                continue
+            t += f'            <th class="attr-group" colspan="{len(suf_list)+1}">{_esc(col)}</th>\n'
+        t += '          </tr>\n          <tr>\n'
+        for col, _ in _FLAT_COLUMNS:
+            suf_list = active_map.get(col, [])
+            for suf, sub_cls, _ in suf_list:
+                t += f'            <th class="sub {sub_cls}">{SUB_LABELS[suf]}</th>\n'
+            if suf_list:
+                t += '            <th class="sub">St</th>\n'
+        t += '          </tr>\n        </thead>\n'
+        return t
+
+    for cat in cat_list:
+        cat_rows = by_cat[cat]
+        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
+
+        # Per-category: which suffixes have any data for each attr
+        active_map = {}
+        for col, _ in _FLAT_COLUMNS:
+            active_suf = [(suf, sc, vc) for suf, sc, vc in SUFFIXES
+                          if _has_any(cat_rows, col, suf)]
+            if active_suf:
+                active_map[col] = active_suf
+
+        cat_mis = sum(1 for r in cat_rows for col in active_map
+                      if r.get(f"{col} [Status]") == "MISMATCH")
+
+        html += f'\n  <div class="cat-section" id="{safe_id}">\n'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(cat)} <span class="cnt">{len(cat_rows)} products</span>'
+        if cat_mis:
+            html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mis} mismatches</span>'
+        html += ' <span class="toggle">&#9654; expand</span></div>\n'
+        html += '    <div class="cat-body">\n'
+        html += '    <div class="grid-wrap">\n'
+        html += f'      <div class="search"><input type="text" placeholder="Search in {_esc(cat)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
+        html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button></div>\n'
+        html += '      <div class="grid-scroll">\n'
+        html += '        <table>\n'
+        html += _thead_cat(active_map)
+        html += '          <tbody>\n'
+
+        for r in cat_rows:
+            in_web = r["In Web"]
+            in_google = r["In Google"]
+            has_mis = any(r.get(f"{col} [Status]") == "MISMATCH" for col in active_map)
+            html += f'          <tr data-has-mismatch="{1 if has_mis else 0}">\n'
+            html += f'            <td class="sc sc0"><strong>{_esc(r["SKU"])}</strong></td>\n'
+            html += f'            <td class="sc sc1">{_esc(r["Zoho Title"])}</td>\n'
+            zoho_st = r["Status"]
+            st_cls = "tag-inactive" if zoho_st.lower() == "inactive" else ""
+            html += f'            <td class="{st_cls}">{_esc(zoho_st)}</td>\n'
+            html += f'            <td class="val-web">{_esc(r["Website Name"])}</td>\n'
+            html += f'            <td class="val-google">{_esc(r["Google Name"])}</td>\n'
+            html += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
+            html += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
+            for col, _ in _FLAT_COLUMNS:
+                suf_list = active_map.get(col)
+                if not suf_list:
+                    continue
+                st = r.get(f"{col} [Status]", "")
+                ccls = {"MISMATCH": "cell-mismatch", "PARTIAL": "cell-partial", "OK": "cell-ok"}.get(st, "")
+                scls = {"MISMATCH": "tag-mis", "PARTIAL": "tag-part", "OK": "tag-ok"}.get(st, "cell-empty")
+                icon = {"MISMATCH": "&#10007;", "PARTIAL": "~", "OK": "&#10003;"}.get(st, "")
+                for suf, _, vcls in suf_list:
+                    v = str(r.get(f"{col} {suf}", "") or "")
+                    if v and v.lower() not in ("nan", "none"):
+                        html += f'            <td class="{ccls} {vcls}">{_esc(v)}</td>\n'
+                    else:
+                        html += f'            <td class="{ccls} cell-empty">&mdash;</td>\n'
+                html += f'            <td class="{ccls} {scls}">{icon}</td>\n'
+            html += '          </tr>\n'
+
+        html += '          </tbody>\n        </table>\n      </div>\n    </div>\n    </div>\n  </div>\n'
+
+    html += """
+</div>
+<script>
+function filterCat(input, catId) {
+  const filter = input.value.toLowerCase();
+  const section = document.getElementById(catId);
+  const mismatchOnly = section.querySelector('.filter-btn.active');
+  section.querySelectorAll('tbody tr').forEach(row => {
+    const textMatch = !filter || row.textContent.toLowerCase().includes(filter);
+    const misMatch  = !mismatchOnly || row.dataset.hasMismatch === '1';
+    row.style.display = (textMatch && misMatch) ? '' : 'none';
+  });
+}
+function toggleMismatch(btn, catId) {
+  btn.classList.toggle('active');
+  filterCat(btn.closest('.grid-wrap').querySelector('input'), catId);
+}
+function toggleCat(catId) {
+  const s = document.getElementById(catId);
+  const t = s.querySelector('.toggle');
+  s.classList.toggle('expanded');
+  t.innerHTML = s.classList.contains('expanded') ? '&#9660; collapse' : '&#9654; expand';
+}
+function expandCat(catId) {
+  const s = document.getElementById(catId);
+  if (!s.classList.contains('expanded')) {
+    s.classList.add('expanded');
+    const t = s.querySelector('.toggle');
+    if (t) t.innerHTML = '&#9660; collapse';
+  }
+}
+function expandAll() {
+  document.querySelectorAll('.cat-section').forEach(s => {
+    s.classList.add('expanded');
+    const t = s.querySelector('.toggle');
+    if (t) t.innerHTML = '&#9660; collapse';
+  });
+}
+function collapseAll() {
+  document.querySelectorAll('.cat-section').forEach(s => {
+    s.classList.remove('expanded');
+    const t = s.querySelector('.toggle');
+    if (t) t.innerHTML = '&#9654; expand';
+  });
+}
+function toggleGlobalMismatch(btn) {
+  btn.classList.toggle('active');
+  const active = btn.classList.contains('active');
+  document.querySelectorAll('.cat-section').forEach(section => {
+    const lb = section.querySelector('.filter-btn');
+    active ? lb.classList.add('active') : lb.classList.remove('active');
+    filterCat(section.querySelector('.search input'), section.id);
+  });
+}
+</script>
+</body>
+</html>"""
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"  All products table: {output_path}")
+    return output_path
+
+
 # ─── Head Type filtered page ────────────────────────────────────────────────
 
 HEAD_TYPE_BRANDS = ["John Deere", "Bobcat", "Kubota"]
@@ -849,10 +1296,19 @@ _HEAD_KEYS = [
     "Coupler Type", "Coupler Type/Filter",
 ]
 
-# Extra columns to show in the table
+# Extra columns to show in the table — mirrors COMMON_ATTRS (Head Style already shown as Head Type)
 _HT_EXTRA_ATTRS = [
-    "Pin Size", "Carrier Weight Class", "Machine Type",
-    "Bucket Size", "Front Pin Diameter (mm)", "Rear Pin Diameter (mm)",
+    "Bucket Size",
+    "Pin Size",
+    "Front Pin Length (mm)",
+    "Rear Pin Length (mm)",
+    "Carrier Weight Class",
+    "Machine Type",
+    "Shipping Weight (lb)",
+    "Front Ear to Ear",
+    "Rear Ear to Ear",
+    "Fits To",
+    "Capacity (yd³)",
 ]
 
 
@@ -1038,6 +1494,12 @@ def generate_head_type_html(rows, output_path=None):
   .stat {{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; }}
   .stat .num {{ font-size:1.6rem; font-weight:700; }}
   .stat .label {{ color:var(--muted); font-size:0.8rem; }}
+  /* Sticky columns */
+  .sc {{ position:sticky; z-index:5; background:var(--card); }}
+  .sc0 {{ left:0; min-width:80px; }}
+  .sc1 {{ left:80px; min-width:220px; border-right:1px solid var(--border); }}
+  th.sc {{ z-index:15; background:#0d1823; }}
+  tr:hover .sc {{ background:#253349; }}
   /* Tabs */
   .tabs {{ display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:0; }}
   .tab {{
@@ -1091,6 +1553,7 @@ def generate_head_type_html(rows, output_path=None):
     <a href="comparison_report.html">Comparison Report</a>
     <a href="attribute_grid.html">Attribute Grid</a>
     <a href="head_type_report.html" class="current">Head Type (JD / Bobcat / Kubota)</a>
+    <a href="all_products.html">All Products</a>
   </nav>
   <h1>Head Type Products — John Deere / Bobcat / Kubota</h1>
   <p class="subtitle">Products filtered by Coupler Head Type from all sources (Zoho · Website · Google Sheets)</p>
@@ -1111,7 +1574,39 @@ def generate_head_type_html(rows, output_path=None):
         html += f'    <div class="tab" onclick="showTab(\'{tab_id}\',this)" style="--tc:{color}">{_esc(brand)}<span class="badge">{len(by_brand[brand])}</span></div>\n'
     html += '  </div>\n'
 
+    def _has_data(rows, key):
+        return any(
+            r.get(key, "") and str(r.get(key, "")).strip() not in ("", "nan", "none")
+            for r in rows
+        )
+
+    def _val_cell(val):
+        if val and str(val).strip() not in ("", "nan", "none"):
+            return f'<td>{_esc(str(val))}</td>'
+        return '<td style="color:var(--muted)">—</td>'
+
+    SRC_COLORS = {"Zoho": "#fbbf24", "Web": "#4ade80", "Google": "#c084fc"}
+    SUB_STYLE = 'font-size:0.65rem;background:rgba(0,0,0,0.2);text-align:center'
+
     def _build_table(tab_rows, table_id):
+        # Pre-compute which sub-columns actually have data
+        ht_srcs = [s for s in ["Zoho", "Web", "Google"]
+                   if _has_data(tab_rows, f"Head Type [{s}]")]
+
+        attr_srcs = {}  # attr -> list of sources with data
+        visible_attrs = []
+        for attr in _HT_EXTRA_ATTRS:
+            srcs = [s for s in ["Zoho", "Web", "Google"]
+                    if _has_data(tab_rows, f"{attr} [{s}]")]
+            if srcs:
+                attr_srcs[attr] = srcs
+                visible_attrs.append(attr)
+
+        # Fixed columns count (SKU + Zoho Title are sticky, rest are not)
+        fixed_cols = 7  # Zoho Title, Category, Brand, Website Name, In Web, In Google, Prices (2) = 9 minus 2 sticky = 7 non-sticky
+        # Total non-attr cols: 2 sticky + 7 = 9
+        non_attr_count = 9
+
         out = f"""
   <div class="table-wrap">
     <div class="search-bar"><input type="text" placeholder="Search by SKU, name, category..." onkeyup="filterTable(this,'{table_id}')"></div>
@@ -1119,30 +1614,25 @@ def generate_head_type_html(rows, output_path=None):
       <table id="{table_id}">
         <thead>
           <tr>
-            <th>SKU</th>
-            <th>Category</th>
-            <th>Brand</th>
-            <th>Zoho Title</th>
-            <th>Website Name</th>
-            <th>In Web</th>
-            <th>In Google</th>
-            <th class="price">Zoho Price</th>
-            <th class="price">Web Price</th>
-            <th class="group-head" colspan="3">Head Type</th>
+            <th rowspan="2" class="sc sc0">SKU</th>
+            <th rowspan="2" class="sc sc1">Zoho Title</th>
+            <th rowspan="2">Category</th>
+            <th rowspan="2">Brand</th>
+            <th rowspan="2">Website Name</th>
+            <th rowspan="2">In Web</th>
+            <th rowspan="2">In Google</th>
+            <th rowspan="2" class="price">Zoho Price</th>
+            <th rowspan="2" class="price">Web Price</th>
+            <th class="group-head" colspan="{len(ht_srcs)}">Head Type</th>
 """
-        for attr in _HT_EXTRA_ATTRS:
-            out += f'            <th class="group-head" colspan="3">{_esc(attr)}</th>\n'
-        out += """          </tr>
-          <tr>
-            <th colspan="9"></th>
-            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>
-            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>
-            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>
-"""
-        for _ in _HT_EXTRA_ATTRS:
-            out += '            <th style="font-size:0.65rem;color:#fbbf24;background:rgba(0,0,0,0.2);text-align:center">Zoho</th>\n'
-            out += '            <th style="font-size:0.65rem;color:#4ade80;background:rgba(0,0,0,0.2);text-align:center">Web</th>\n'
-            out += '            <th style="font-size:0.65rem;color:#c084fc;background:rgba(0,0,0,0.2);text-align:center">Google</th>\n'
+        for attr in visible_attrs:
+            out += f'            <th class="group-head" colspan="{len(attr_srcs[attr])}">{_esc(attr)}</th>\n'
+        out += '          </tr>\n          <tr>\n'
+        for src in ht_srcs:
+            out += f'            <th style="{SUB_STYLE};color:{SRC_COLORS[src]}">{src}</th>\n'
+        for attr in visible_attrs:
+            for src in attr_srcs[attr]:
+                out += f'            <th style="{SUB_STYLE};color:{SRC_COLORS[src]}">{src}</th>\n'
         out += '          </tr>\n        </thead>\n        <tbody>\n'
 
         for r in tab_rows:
@@ -1151,25 +1641,20 @@ def generate_head_type_html(rows, output_path=None):
             in_web = r["In Website"]
             in_google = r["In Google"]
             out += '          <tr>\n'
-            out += f'            <td><strong>{_esc(r["SKU"])}</strong></td>\n'
+            out += f'            <td class="sc sc0"><strong>{_esc(r["SKU"])}</strong></td>\n'
+            out += f'            <td class="sc sc1">{_esc(r["Zoho Title"])}</td>\n'
             out += f'            <td>{_esc(r["Category"])}</td>\n'
             out += f'            <td style="color:{color};font-weight:600">{_esc(brand)}</td>\n'
-            out += f'            <td>{_esc(r["Zoho Title"])}</td>\n'
             out += f'            <td>{_esc(r["Website Name"])}</td>\n'
             out += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
             out += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
             out += f'            <td class="price">{fmt_price(r["Zoho Price"])}</td>\n'
             out += f'            <td class="price">{fmt_price(r["Website Price"])}</td>\n'
-            out += f'            <td>{ht_cell(r["Head Type [Zoho]"], brand)}</td>\n'
-            out += f'            <td>{ht_cell(r["Head Type [Web]"], brand)}</td>\n'
-            out += f'            <td>{ht_cell(r["Head Type [Google]"], brand)}</td>\n'
-            for attr in _HT_EXTRA_ATTRS:
-                for src in ["Zoho", "Web", "Google"]:
-                    val = r.get(f"{attr} [{src}]", "")
-                    if val and str(val).strip() not in ("", "nan", "none"):
-                        out += f'            <td>{_esc(str(val))}</td>\n'
-                    else:
-                        out += '            <td style="color:var(--muted)">—</td>\n'
+            for src in ht_srcs:
+                out += f'            <td>{ht_cell(r["Head Type [" + src + "]"], brand)}</td>\n'
+            for attr in visible_attrs:
+                for src in attr_srcs[attr]:
+                    out += f'            {_val_cell(r.get(f"{attr} [{src}]", ""))}\n'
             out += '          </tr>\n'
 
         out += '        </tbody>\n      </table>\n    </div>\n  </div>\n'

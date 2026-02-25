@@ -6,7 +6,7 @@ Tool for comparing product data across three sources: **Zoho Inventory**, **WooC
 
 - [Comparison Report](output/comparison_report.html) — side-by-side product comparison across all three sources
 - [Attribute Grid](output/attribute_grid.html) — attribute completeness grid by category
-- [Head Type Report](output/head_type_reoprt.html) — grouping by heads
+- [Head Type Report](output/head_type_report.html) — grouping by heads
 
 ## Features
 
