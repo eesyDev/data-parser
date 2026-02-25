@@ -140,7 +140,7 @@ def load_zoho():
         if str(item.get("status", "")).lower() == "inactive":
             continue
         rows.append({
-            "name": item.get("name", ""),
+            "name": (item.get("cf_website_title_only") or "").strip() or item.get("name", ""),
             "sku": item.get("sku", ""),
             "rate": item.get("rate", ""),
             "category_name": item.get("category_name", ""),
@@ -157,6 +157,14 @@ def load_zoho_csv(path=None):
     # Filter inactive items
     if "Status" in df.columns:
         df = df[df["Status"].str.lower() != "inactive"]
+    # Use client-facing website title when available, fall back to internal name
+    if "CF.Website Title Only" in df.columns:
+        df["Item Name"] = df.apply(
+            lambda r: (str(r["CF.Website Title Only"]).strip()
+                       if pd.notna(r["CF.Website Title Only"]) and str(r["CF.Website Title Only"]).strip()
+                       else str(r.get("Item Name", "")).strip()),
+            axis=1,
+        )
     return _normalize(df, config.ZOHO_CSV_COLUMNS, "zoho")
 
 

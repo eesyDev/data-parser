@@ -375,8 +375,8 @@ def _find_source_value(attrs, attr_name):
         return ""
     if attr_name in attrs:
         return attrs[attr_name]
-    # For capacity/grapple/compaction/impulse columns use strict matching only — no partial across units
-    if re.search(r'(?i)capacity|grapple width|compaction width|impulse force', attr_name):
+    # For capacity/grapple/compaction/impulse/weight columns use strict matching only — no partial across units
+    if re.search(r'(?i)capacity|grapple width|compaction width|impulse force|shipping weight|product weight', attr_name):
         pass  # skip partial match, go straight to aliases below
     else:
         # Try partial match
@@ -1403,6 +1403,15 @@ def build_head_type_grid():
                 google_name = g_attrs[key]
                 break
 
+        # Compute Head Type status
+        ht_vals = [v for v in [ht_zoho, ht_web, ht_google] if v and str(v).strip() not in ("", "nan")]
+        if not ht_vals:
+            ht_status = ""
+        elif len(ht_vals) == 1:
+            ht_status = "PARTIAL"
+        else:
+            ht_status = "OK" if _all_match(ht_vals) else "MISMATCH"
+
         row = {
             "SKU": sku,
             "Brand": brand,
@@ -1417,13 +1426,24 @@ def build_head_type_grid():
             "Head Type [Zoho]":   ht_zoho,
             "Head Type [Web]":    ht_web,
             "Head Type [Google]": ht_google,
+            "Head Type [Status]": ht_status,
         }
 
-        # Extra attribute columns
+        # Extra attribute columns with status
         for attr in _HT_EXTRA_ATTRS:
-            row[f"{attr} [Zoho]"]   = _find_source_value(z_attrs, attr)
-            row[f"{attr} [Web]"]    = _find_source_value(w_attrs, attr)
-            row[f"{attr} [Google]"] = _find_source_value(g_attrs, attr)
+            z_val = _find_source_value(z_attrs, attr)
+            w_val = _find_source_value(w_attrs, attr)
+            g_val = _find_source_value(g_attrs, attr)
+            row[f"{attr} [Zoho]"]   = z_val
+            row[f"{attr} [Web]"]    = w_val
+            row[f"{attr} [Google]"] = g_val
+            vals = [v for v in [z_val, w_val, g_val] if v and str(v).strip() not in ("", "nan")]
+            if not vals:
+                row[f"{attr} [Status]"] = ""
+            elif len(vals) == 1:
+                row[f"{attr} [Status]"] = "PARTIAL"
+            else:
+                row[f"{attr} [Status]"] = "OK" if _all_match(vals) else "MISMATCH"
 
         rows.append(row)
 
@@ -1545,6 +1565,15 @@ def generate_head_type_html(rows, output_path=None):
   .tag-yes {{ color:var(--green); }}
   .tag-no  {{ color:var(--red); }}
   .price   {{ font-family:'SF Mono',Monaco,monospace; }}
+  .cell-ok      {{ background:rgba(34,197,94,0.08); }}
+  .cell-mismatch{{ background:rgba(239,68,68,0.12); }}
+  .cell-partial {{ background:rgba(245,158,11,0.08); }}
+  .tag-ok  {{ color:var(--green); font-weight:600; font-size:0.75rem; }}
+  .tag-mis {{ color:var(--red);   font-weight:600; font-size:0.75rem; }}
+  .tag-part{{ color:var(--orange);font-size:0.75rem; }}
+  .val-zoho   {{ color:#fbbf24; }}
+  .val-web    {{ color:#4ade80; }}
+  .val-google {{ color:#c084fc; }}
 </style>
 </head>
 <body>
@@ -1602,10 +1631,8 @@ def generate_head_type_html(rows, output_path=None):
                 attr_srcs[attr] = srcs
                 visible_attrs.append(attr)
 
-        # Fixed columns count (SKU + Zoho Title are sticky, rest are not)
-        fixed_cols = 7  # Zoho Title, Category, Brand, Website Name, In Web, In Google, Prices (2) = 9 minus 2 sticky = 7 non-sticky
-        # Total non-attr cols: 2 sticky + 7 = 9
-        non_attr_count = 9
+        # Head Type colspan = sources + 1 status column
+        ht_colspan = len(ht_srcs) + 1
 
         out = f"""
   <div class="table-wrap">
@@ -1623,17 +1650,38 @@ def generate_head_type_html(rows, output_path=None):
             <th rowspan="2">In Google</th>
             <th rowspan="2" class="price">Zoho Price</th>
             <th rowspan="2" class="price">Web Price</th>
-            <th class="group-head" colspan="{len(ht_srcs)}">Head Type</th>
+            <th class="group-head" colspan="{ht_colspan}">Head Type</th>
 """
         for attr in visible_attrs:
-            out += f'            <th class="group-head" colspan="{len(attr_srcs[attr])}">{_esc(attr)}</th>\n'
+            attr_colspan = len(attr_srcs[attr]) + 1  # +1 for status
+            out += f'            <th class="group-head" colspan="{attr_colspan}">{_esc(attr)}</th>\n'
         out += '          </tr>\n          <tr>\n'
         for src in ht_srcs:
             out += f'            <th style="{SUB_STYLE};color:{SRC_COLORS[src]}">{src}</th>\n'
+        out += f'            <th style="{SUB_STYLE};color:var(--muted)">St</th>\n'
         for attr in visible_attrs:
             for src in attr_srcs[attr]:
                 out += f'            <th style="{SUB_STYLE};color:{SRC_COLORS[src]}">{src}</th>\n'
+            out += f'            <th style="{SUB_STYLE};color:var(--muted)">St</th>\n'
         out += '          </tr>\n        </thead>\n        <tbody>\n'
+
+        STATUS_CLS = {"OK": "tag-ok", "MISMATCH": "tag-mis", "PARTIAL": "tag-part"}
+        STATUS_ICO = {"OK": "&#10003;", "MISMATCH": "&#10007;", "PARTIAL": "~"}
+        CELL_CLS   = {"OK": "cell-ok", "MISMATCH": "cell-mismatch", "PARTIAL": "cell-partial"}
+
+        def _src_color_cell(val, src, status):
+            cell_bg = CELL_CLS.get(status, "")
+            color = SRC_COLORS.get(src, "")
+            color_style = f"color:{color};" if color else ""
+            if val and str(val).strip() not in ("", "nan", "none"):
+                return f'<td class="{cell_bg}" style="{color_style}">{_esc(str(val))}</td>'
+            return f'<td class="{cell_bg}" style="color:var(--muted)">—</td>'
+
+        def _status_cell(status):
+            cls = STATUS_CLS.get(status, "cell-empty")
+            ico = STATUS_ICO.get(status, "")
+            bg  = CELL_CLS.get(status, "")
+            return f'<td class="{bg} {cls}">{ico}</td>'
 
         for r in tab_rows:
             brand = r["Brand"]
@@ -1650,11 +1698,15 @@ def generate_head_type_html(rows, output_path=None):
             out += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
             out += f'            <td class="price">{fmt_price(r["Zoho Price"])}</td>\n'
             out += f'            <td class="price">{fmt_price(r["Website Price"])}</td>\n'
+            ht_status = r.get("Head Type [Status]", "")
             for src in ht_srcs:
-                out += f'            <td>{ht_cell(r["Head Type [" + src + "]"], brand)}</td>\n'
+                out += f'            {_src_color_cell(r["Head Type [" + src + "]"], src, ht_status)}\n'
+            out += f'            {_status_cell(ht_status)}\n'
             for attr in visible_attrs:
+                attr_status = r.get(f"{attr} [Status]", "")
                 for src in attr_srcs[attr]:
-                    out += f'            {_val_cell(r.get(f"{attr} [{src}]", ""))}\n'
+                    out += f'            {_src_color_cell(r.get(f"{attr} [{src}]", ""), src, attr_status)}\n'
+                out += f'            {_status_cell(attr_status)}\n'
             out += '          </tr>\n'
 
         out += '        </tbody>\n      </table>\n    </div>\n  </div>\n'
