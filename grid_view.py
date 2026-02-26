@@ -1064,6 +1064,7 @@ def generate_all_products_html(rows, output_path=None):
   .cell-mismatch {{ background:rgba(239,68,68,0.12); }}
   .cell-partial  {{ background:rgba(245,158,11,0.08); }}
   .cell-empty {{ color:var(--muted); }}
+  td.group-start, th.group-start {{ border-left:2px solid var(--accent); }}
   .val-name {{ color:#93c5fd; }} .val-zoho {{ color:#fbbf24; }}
   .val-web  {{ color:#86efac; }} .val-google {{ color:#d8b4fe; }}
   .tag-ok  {{ color:var(--green); font-weight:600; }}
@@ -1153,8 +1154,9 @@ def generate_all_products_html(rows, output_path=None):
         t += '          </tr>\n          <tr>\n'
         for col, _ in _FLAT_COLUMNS:
             suf_list = active_map.get(col, [])
-            for suf, sub_cls, _ in suf_list:
-                t += f'            <th class="sub {sub_cls}">{SUB_LABELS[suf]}</th>\n'
+            for i, (suf, sub_cls, _) in enumerate(suf_list):
+                first_cls = " group-start" if i == 0 else ""
+                t += f'            <th class="sub {sub_cls}{first_cls}">{SUB_LABELS[suf]}</th>\n'
             if suf_list:
                 t += '            <th class="sub">St</th>\n'
         t += '          </tr>\n        </thead>\n'
@@ -1211,12 +1213,13 @@ def generate_all_products_html(rows, output_path=None):
                 ccls = {"MISMATCH": "cell-mismatch", "PARTIAL": "cell-partial", "OK": "cell-ok"}.get(st, "")
                 scls = {"MISMATCH": "tag-mis", "PARTIAL": "tag-part", "OK": "tag-ok"}.get(st, "cell-empty")
                 icon = {"MISMATCH": "&#10007;", "PARTIAL": "~", "OK": "&#10003;"}.get(st, "")
-                for suf, _, vcls in suf_list:
+                for i, (suf, _, vcls) in enumerate(suf_list):
+                    first_cls = " group-start" if i == 0 else ""
                     v = str(r.get(f"{col} {suf}", "") or "")
                     if v and v.lower() not in ("nan", "none"):
-                        html += f'            <td class="{ccls} {vcls}">{_esc(v)}</td>\n'
+                        html += f'            <td class="{ccls} {vcls}{first_cls}">{_esc(v)}</td>\n'
                     else:
-                        html += f'            <td class="{ccls} cell-empty">&mdash;</td>\n'
+                        html += f'            <td class="{ccls} cell-empty{first_cls}">&mdash;</td>\n'
                 html += f'            <td class="{ccls} {scls}">{icon}</td>\n'
             html += '          </tr>\n'
 

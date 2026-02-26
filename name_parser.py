@@ -453,6 +453,10 @@ def _normalize_value(val):
     s = re.sub(r'\s+', ' ', s)
     # Fix escaped commas from WooCommerce CSV (\, -> ,)
     s = s.replace('\\,', ',')
+    # Sort comma-separated multi-values so order doesn't matter for comparison
+    if ',' in s:
+        parts = sorted(p.strip() for p in s.split(',') if p.strip())
+        s = ' '.join(parts)
     s = s.replace(',', '').replace('"', '').replace("'", '')
     s = s.rstrip('/')
     return s
