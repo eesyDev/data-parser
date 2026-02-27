@@ -499,6 +499,7 @@ def _render_grid_table(df_group, attr_names):
     t += '          <thead>\n          <tr>\n'
     t += '            <th rowspan="2" class="sticky-col sticky-col-0">SKU</th>\n'
     t += '            <th rowspan="2" class="sticky-col sticky-col-1">Zoho Title (website)</th>\n'
+    t += '            <th rowspan="2" class="done-col">&#10003;</th>\n'
     t += '            <th rowspan="2">Status</th>\n'
     t += '            <th rowspan="2">Website Name</th>\n'
     t += '            <th rowspan="2">Google Name</th>\n'
@@ -529,9 +530,11 @@ def _render_grid_table(df_group, attr_names):
             str(row.get(f"{a} [Status]", "")) == "MISMATCH"
             for a in attr_names if active_subs.get(a)
         )
-        t += f'          <tr data-has-mismatch="{1 if has_mismatch else 0}">\n'
-        t += f'            <td class="sticky-col sticky-col-0"><strong>{_esc(str(row.get("SKU", "")))}</strong></td>\n'
+        _sku = _esc(str(row.get("SKU", "")))
+        t += f'          <tr data-has-mismatch="{1 if has_mismatch else 0}" data-sku="{_sku}">\n'
+        t += f'            <td class="sticky-col sticky-col-0"><strong>{_sku}</strong></td>\n'
         t += f'            <td class="sticky-col sticky-col-1">{_esc(str(row.get("Zoho Title", "")))}</td>\n'
+        t += f'            <td class="done-check"><input type="checkbox" class="done-cb" data-sku="{_sku}" onchange="toggleRow(this)"></td>\n'
         zoho_st = str(row.get("Zoho Status", ""))
         t += f'            <td class="{"tag-no" if zoho_st.lower() == "inactive" else ""}">{_esc(zoho_st)}</td>\n'
         t += f'            <td class="val-web">{_esc(str(row.get("Website Name", "")))}</td>\n'
@@ -742,20 +745,11 @@ def generate_grid_html(grids, output_path=None):
   .cat-body {{ display:none; }}
   .cat-section.expanded .cat-body {{ display:block; }}
 
-  /* Done checkbox */
-  .done-label {{
-    display:inline-flex; align-items:center; gap:5px;
-    margin-left:auto; padding:3px 10px; border-radius:6px;
-    font-size:0.75rem; font-weight:500; cursor:pointer;
-    border:1px solid var(--border); color:var(--muted);
-    background:var(--card); transition:all 0.15s; user-select:none;
-  }}
-  .done-label:hover {{ border-color:var(--green); color:var(--green); }}
-  .done-label input {{ cursor:pointer; accent-color:var(--green); width:13px; height:13px; }}
-  .cat-section.done > .cat-header {{ opacity:0.55; }}
-  .cat-section.done > .cat-header .done-label {{
-    background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green);
-  }}
+  /* Done checkbox per row */
+  th.done-col {{ width:28px; text-align:center; padding:0 4px; }}
+  td.done-check {{ width:28px; text-align:center; padding:0 4px; }}
+  td.done-check input {{ cursor:pointer; accent-color:var(--green); width:14px; height:14px; }}
+  tr.row-done td:not(.done-check) {{ opacity:0.38; text-decoration:line-through; }}
 </style>
 </head>
 <body>
@@ -821,12 +815,11 @@ def generate_grid_html(grids, output_path=None):
         )
 
         html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')" style="display:flex;align-items:center;gap:8px;">'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">'
         html += f'      <span>{_esc(label)} <span class="cnt">{len(df)} products</span>'
         if cat_mismatches:
             html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mismatches} mismatches</span>'
         html += f'</span>\n'
-        html += f'      <label class="done-label" onclick="event.stopPropagation()"><input type="checkbox" class="done-cb" onchange="toggleDone(this,\'{safe_id}\')"> Done</label>\n'
         html += f'      <span class="toggle">▶ expand</span>\n'
         html += f'    </div>\n'
         html += '    <div class="cat-body">\n'
@@ -910,7 +903,7 @@ function toggleGlobalMismatch(btn) {
   });
 }
 
-// ── Progress checkboxes ──────────────────────────────────────────
+// ── Progress checkboxes (per row / SKU) ─────────────────────────
 const LS_KEY = 'jma_progress_grid';
 
 function _loadProgress() {
@@ -921,26 +914,26 @@ function _saveProgress(p) {
   _updateCount(p);
 }
 function _updateCount(p) {
-  const done = Object.values(p).filter(Boolean).length;
-  const total = document.querySelectorAll('.done-cb').length;
+  const done = Object.keys(p).filter(k => p[k]).length;
+  const total = document.querySelectorAll('.done-cb[data-sku]').length;
   const el = document.getElementById('progress-count');
   if (el) el.textContent = done ? `${done} / ${total} done` : '';
 }
 function _applyProgress(p) {
-  Object.entries(p).forEach(([id, checked]) => {
-    const sec = document.getElementById(id);
-    if (!sec) return;
-    const cb = sec.querySelector('.done-cb');
-    if (cb) cb.checked = checked;
-    sec.classList.toggle('done', !!checked);
+  document.querySelectorAll('.done-cb[data-sku]').forEach(cb => {
+    if (p[cb.dataset.sku]) {
+      cb.checked = true;
+      cb.closest('tr').classList.add('row-done');
+    }
   });
   _updateCount(p);
 }
 
-function toggleDone(cb, catId) {
+function toggleRow(cb) {
+  const sku = cb.dataset.sku;
+  cb.closest('tr').classList.toggle('row-done', cb.checked);
   const p = _loadProgress();
-  p[catId] = cb.checked;
-  document.getElementById(catId)?.classList.toggle('done', cb.checked);
+  if (cb.checked) p[sku] = true; else delete p[sku];
   _saveProgress(p);
 }
 
@@ -969,10 +962,10 @@ function importProgress(e) {
 }
 
 function clearProgress() {
-  if (!confirm('Uncheck all categories?')) return;
+  if (!confirm('Uncheck all products?')) return;
   localStorage.removeItem(LS_KEY);
   document.querySelectorAll('.done-cb').forEach(cb => cb.checked = false);
-  document.querySelectorAll('.cat-section.done').forEach(s => s.classList.remove('done'));
+  document.querySelectorAll('tr.row-done').forEach(tr => tr.classList.remove('row-done'));
   _updateCount({});
 }
 
@@ -1231,19 +1224,11 @@ def generate_all_products_html(rows, output_path=None):
   .cat-header .toggle {{ font-size:0.8rem; color:var(--muted); margin-left:6px; }}
   .cat-body {{ display:none; }}
   .cat-section.expanded .cat-body {{ display:block; }}
-  .done-label {{
-    display:inline-flex; align-items:center; gap:5px;
-    margin-left:auto; padding:3px 10px; border-radius:6px;
-    font-size:0.75rem; font-weight:500; cursor:pointer;
-    border:1px solid var(--border); color:var(--muted);
-    background:var(--card); transition:all 0.15s; user-select:none;
-  }}
-  .done-label:hover {{ border-color:var(--green); color:var(--green); }}
-  .done-label input {{ cursor:pointer; accent-color:var(--green); width:13px; height:13px; }}
-  .cat-section.done > .cat-header {{ opacity:0.55; }}
-  .cat-section.done > .cat-header .done-label {{
-    background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green);
-  }}
+  /* Done checkbox per row */
+  th.done-col {{ width:28px; text-align:center; padding:0 4px; }}
+  td.done-check {{ width:28px; text-align:center; padding:0 4px; }}
+  td.done-check input {{ cursor:pointer; accent-color:var(--green); width:14px; height:14px; }}
+  tr.row-done td:not(.done-check) {{ opacity:0.38; text-decoration:line-through; }}
 </style>
 </head>
 <body>
@@ -1337,6 +1322,7 @@ def generate_all_products_html(rows, output_path=None):
         t = '        <thead>\n          <tr>\n'
         t += '            <th rowspan="2" class="sc sc0">SKU</th>\n'
         t += '            <th rowspan="2" class="sc sc1">Zoho Title (website)</th>\n'
+        t += '            <th rowspan="2" class="done-col">&#10003;</th>\n'
         t += '            <th rowspan="2">Status</th>\n'
         t += '            <th rowspan="2">Website Name</th>\n'
         t += '            <th rowspan="2">Google Name</th>\n'
@@ -1372,9 +1358,11 @@ def generate_all_products_html(rows, output_path=None):
             in_web = r["In Web"]
             in_google = r["In Google"]
             has_mis = any(r.get(f"{col} [Status]") == "MISMATCH" for col in grp_active_map)
-            t += f'          <tr data-has-mismatch="{1 if has_mis else 0}">\n'
-            t += f'            <td class="sc sc0"><strong>{_esc(r["SKU"])}</strong></td>\n'
+            _sku = _esc(r["SKU"])
+            t += f'          <tr data-has-mismatch="{1 if has_mis else 0}" data-sku="{_sku}">\n'
+            t += f'            <td class="sc sc0"><strong>{_sku}</strong></td>\n'
             t += f'            <td class="sc sc1">{_esc(r["Zoho Title"])}</td>\n'
+            t += f'            <td class="done-check"><input type="checkbox" class="done-cb" data-sku="{_sku}" onchange="toggleRow(this)"></td>\n'
             zoho_st = r["Status"]
             st_cls = "tag-inactive" if zoho_st.lower() == "inactive" else ""
             t += f'            <td class="{st_cls}">{_esc(zoho_st)}</td>\n'
@@ -1412,12 +1400,11 @@ def generate_all_products_html(rows, output_path=None):
                       if r.get(f"{col} [Status]") == "MISMATCH")
 
         html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')" style="display:flex;align-items:center;gap:8px;">'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">'
         html += f'      <span>{_esc(label)} <span class="cnt">{len(cat_rows)} products</span>'
         if cat_mis:
             html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mis} mismatches</span>'
         html += f'</span>\n'
-        html += f'      <label class="done-label" onclick="event.stopPropagation()"><input type="checkbox" class="done-cb" onchange="toggleDone(this,\'{safe_id}\')"> Done</label>\n'
         html += f'      <span class="toggle">&#9654; expand</span>\n'
         html += f'    </div>\n'
         html += '    <div class="cat-body">\n'
@@ -1483,7 +1470,7 @@ function toggleGlobalMismatch(btn) {
   });
 }
 
-// ── Progress checkboxes ──────────────────────────────────────────
+// ── Progress checkboxes (per row / SKU) ─────────────────────────
 const LS_KEY = 'jma_progress_flat';
 
 function _loadProgress() {
@@ -1494,26 +1481,26 @@ function _saveProgress(p) {
   _updateCount(p);
 }
 function _updateCount(p) {
-  const done = Object.values(p).filter(Boolean).length;
-  const total = document.querySelectorAll('.done-cb').length;
+  const done = Object.keys(p).filter(k => p[k]).length;
+  const total = document.querySelectorAll('.done-cb[data-sku]').length;
   const el = document.getElementById('progress-count');
   if (el) el.textContent = done ? `${done} / ${total} done` : '';
 }
 function _applyProgress(p) {
-  Object.entries(p).forEach(([id, checked]) => {
-    const sec = document.getElementById(id);
-    if (!sec) return;
-    const cb = sec.querySelector('.done-cb');
-    if (cb) cb.checked = checked;
-    sec.classList.toggle('done', !!checked);
+  document.querySelectorAll('.done-cb[data-sku]').forEach(cb => {
+    if (p[cb.dataset.sku]) {
+      cb.checked = true;
+      cb.closest('tr').classList.add('row-done');
+    }
   });
   _updateCount(p);
 }
 
-function toggleDone(cb, catId) {
+function toggleRow(cb) {
+  const sku = cb.dataset.sku;
+  cb.closest('tr').classList.toggle('row-done', cb.checked);
   const p = _loadProgress();
-  p[catId] = cb.checked;
-  document.getElementById(catId)?.classList.toggle('done', cb.checked);
+  if (cb.checked) p[sku] = true; else delete p[sku];
   _saveProgress(p);
 }
 
@@ -1542,10 +1529,10 @@ function importProgress(e) {
 }
 
 function clearProgress() {
-  if (!confirm('Uncheck all categories?')) return;
+  if (!confirm('Uncheck all products?')) return;
   localStorage.removeItem(LS_KEY);
   document.querySelectorAll('.done-cb').forEach(cb => cb.checked = false);
-  document.querySelectorAll('.cat-section.done').forEach(s => s.classList.remove('done'));
+  document.querySelectorAll('tr.row-done').forEach(tr => tr.classList.remove('row-done'));
   _updateCount({});
 }
 
