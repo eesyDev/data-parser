@@ -1229,11 +1229,11 @@ def generate_all_products_html(rows, output_path=None):
   td.done-check {{ width:28px; text-align:center; padding:0 4px; }}
   td.done-check input {{ cursor:pointer; accent-color:var(--green); width:14px; height:14px; }}
   tr.row-done td:not(.done-check) {{ opacity:0.38; text-decoration:line-through; }}
-  .cell-label {{ display:flex; align-items:center; gap:4px; cursor:pointer; }}
-  .cell-cb {{ cursor:pointer; accent-color:var(--green); width:11px; height:11px; flex-shrink:0; }}
-  td.cell-done {{ background:rgba(74,222,128,0.15) !important; opacity:1 !important; }}
-  td.cell-done .cell-label {{ text-decoration:line-through; color:var(--green); }}
-  tr.row-done td.cell-done .cell-label {{ color:var(--green); }}
+  th.cell-check-col, td.cell-check-col {{ width:22px; text-align:center; padding:0 3px; }}
+  .cell-cb {{ cursor:pointer; accent-color:var(--green); width:12px; height:12px; }}
+  td[data-attr].cell-done {{ text-decoration:line-through; opacity:0.45; }}
+  tr.row-done td[data-attr].cell-done {{ opacity:0.45; }}
+  td.cell-check-col.cell-done {{ background:rgba(74,222,128,0.2) !important; opacity:1 !important; }}
 </style>
 </head>
 <body>
@@ -1346,6 +1346,7 @@ def generate_all_products_html(rows, output_path=None):
                 t += f'            <th class="sub {sub_cls}{first_cls}">{SUB_LABELS[suf]}</th>\n'
             if suf_list:
                 t += '            <th class="sub">St</th>\n'
+                t += '            <th class="sub cell-check-col">&#9744;</th>\n'
         t += '          </tr>\n        </thead>\n'
         return t
 
@@ -1386,12 +1387,12 @@ def generate_all_products_html(rows, output_path=None):
                 for i, (suf, _, vcls) in enumerate(suf_list):
                     first_cls = " group-start" if i == 0 else ""
                     v = str(r.get(f"{col} {suf}", "") or "")
-                    col_key = f"{col} {suf}"
                     if v and v.lower() not in ("nan", "none"):
-                        t += f'            <td class="{ccls} {vcls}{first_cls}" data-sku="{_sku}" data-col="{_esc(col_key)}"><label class="cell-label"><input type="checkbox" class="cell-cb" data-sku="{_sku}" data-col="{_esc(col_key)}" onchange="toggleCell(this)">{_esc(v)}</label></td>\n'
+                        t += f'            <td class="{ccls} {vcls}{first_cls}" data-attr="{_esc(col)}">{_esc(v)}</td>\n'
                     else:
-                        t += f'            <td class="{ccls} cell-empty{first_cls}">&mdash;</td>\n'
-                t += f'            <td class="{ccls} {scls}">{icon}</td>\n'
+                        t += f'            <td class="{ccls} cell-empty{first_cls}" data-attr="{_esc(col)}">&mdash;</td>\n'
+                t += f'            <td class="{ccls} {scls}" data-attr="{_esc(col)}">{icon}</td>\n'
+                t += f'            <td class="cell-check-col"><input type="checkbox" class="cell-cb" data-sku="{_sku}" data-col="{_esc(col)}" onchange="toggleCell(this)"></td>\n'
             t += '          </tr>\n'
         t += '          </tbody>\n        </table>\n      </div>\n'
         return t
@@ -1509,9 +1510,26 @@ function _applyProgress(p) {
     if (p[key]) {
       cb.checked = true;
       cb.closest('td').classList.add('cell-done');
+      const col = cb.dataset.col;
+      cb.closest('tr').querySelectorAll('td[data-attr]').forEach(td => {
+        if (td.dataset.attr === col) td.classList.add('cell-done');
+      });
     }
   });
   _updateCount(p);
+}
+
+function toggleCell(cb) {
+  const key = cb.dataset.sku + '::' + cb.dataset.col;
+  const on = cb.checked;
+  const col = cb.dataset.col;
+  cb.closest('td').classList.toggle('cell-done', on);
+  cb.closest('tr').querySelectorAll(`td[data-attr]`).forEach(td => {
+    if (td.dataset.attr === col) td.classList.toggle('cell-done', on);
+  });
+  const p = _loadProgress();
+  if (on) p[key] = true; else delete p[key];
+  _saveProgress(p);
 }
 
 function toggleRow(cb) {
@@ -1519,14 +1537,6 @@ function toggleRow(cb) {
   cb.closest('tr').classList.toggle('row-done', cb.checked);
   const p = _loadProgress();
   if (cb.checked) p[sku] = true; else delete p[sku];
-  _saveProgress(p);
-}
-
-function toggleCell(cb) {
-  const key = cb.dataset.sku + '::' + cb.dataset.col;
-  cb.closest('td').classList.toggle('cell-done', cb.checked);
-  const p = _loadProgress();
-  if (cb.checked) p[key] = true; else delete p[key];
   _saveProgress(p);
 }
 
