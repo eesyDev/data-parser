@@ -741,6 +741,21 @@ def generate_grid_html(grids, output_path=None):
   .cat-header .toggle {{ font-size:0.8rem; color:var(--muted); margin-left:6px; }}
   .cat-body {{ display:none; }}
   .cat-section.expanded .cat-body {{ display:block; }}
+
+  /* Done checkbox */
+  .done-label {{
+    display:inline-flex; align-items:center; gap:5px;
+    margin-left:auto; padding:3px 10px; border-radius:6px;
+    font-size:0.75rem; font-weight:500; cursor:pointer;
+    border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s; user-select:none;
+  }}
+  .done-label:hover {{ border-color:var(--green); color:var(--green); }}
+  .done-label input {{ cursor:pointer; accent-color:var(--green); width:13px; height:13px; }}
+  .cat-section.done > .cat-header {{ opacity:0.55; }}
+  .cat-section.done > .cat-header .done-label {{
+    background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green);
+  }}
 </style>
 </head>
 <body>
@@ -776,6 +791,13 @@ def generate_grid_html(grids, output_path=None):
       <button class="filter-btn" onclick="expandAll()">Expand All</button>
       <button class="filter-btn" onclick="collapseAll()">Collapse All</button>
     </div>
+    <div class="stat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span style="color:var(--muted);font-size:0.8rem;">Progress:</span>
+      <button class="filter-btn" onclick="exportProgress()" title="Download progress.json">&#8595; Export</button>
+      <label class="filter-btn" style="cursor:pointer;" title="Load progress.json">&#8593; Import<input type="file" accept=".json" style="display:none" onchange="importProgress(event)"></label>
+      <button class="filter-btn" onclick="clearProgress()" title="Uncheck all">&#10005; Clear all</button>
+      <span id="progress-count" style="color:var(--green);font-size:0.8rem;"></span>
+    </div>
   </div>
 
   <div class="cat-nav">
@@ -799,10 +821,14 @@ def generate_grid_html(grids, output_path=None):
         )
 
         html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(label)} <span class="cnt">{len(df)} products</span>'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')" style="display:flex;align-items:center;gap:8px;">'
+        html += f'      <span>{_esc(label)} <span class="cnt">{len(df)} products</span>'
         if cat_mismatches:
             html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mismatches} mismatches</span>'
-        html += ' <span class="toggle">▶ expand</span></div>\n'
+        html += f'</span>\n'
+        html += f'      <label class="done-label" onclick="event.stopPropagation()"><input type="checkbox" class="done-cb" onchange="toggleDone(this,\'{safe_id}\')"> Done</label>\n'
+        html += f'      <span class="toggle">▶ expand</span>\n'
+        html += f'    </div>\n'
         html += '    <div class="cat-body">\n'
         html += f'    <div class="search"><input type="text" placeholder="Search in {_esc(label)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
         html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button>'
@@ -883,6 +909,74 @@ function toggleGlobalMismatch(btn) {
     filterCat(input, section.id);
   });
 }
+
+// ── Progress checkboxes ──────────────────────────────────────────
+const LS_KEY = 'jma_progress_grid';
+
+function _loadProgress() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+}
+function _saveProgress(p) {
+  localStorage.setItem(LS_KEY, JSON.stringify(p));
+  _updateCount(p);
+}
+function _updateCount(p) {
+  const done = Object.values(p).filter(Boolean).length;
+  const total = document.querySelectorAll('.done-cb').length;
+  const el = document.getElementById('progress-count');
+  if (el) el.textContent = done ? `${done} / ${total} done` : '';
+}
+function _applyProgress(p) {
+  Object.entries(p).forEach(([id, checked]) => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const cb = sec.querySelector('.done-cb');
+    if (cb) cb.checked = checked;
+    sec.classList.toggle('done', !!checked);
+  });
+  _updateCount(p);
+}
+
+function toggleDone(cb, catId) {
+  const p = _loadProgress();
+  p[catId] = cb.checked;
+  document.getElementById(catId)?.classList.toggle('done', cb.checked);
+  _saveProgress(p);
+}
+
+function exportProgress() {
+  const p = _loadProgress();
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'progress.json';
+  a.click();
+}
+
+function importProgress(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const p = JSON.parse(ev.target.result);
+      _saveProgress(p);
+      _applyProgress(p);
+    } catch { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function clearProgress() {
+  if (!confirm('Uncheck all categories?')) return;
+  localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('.done-cb').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.cat-section.done').forEach(s => s.classList.remove('done'));
+  _updateCount({});
+}
+
+document.addEventListener('DOMContentLoaded', () => _applyProgress(_loadProgress()));
 </script>
 </body>
 </html>"""
@@ -1137,6 +1231,19 @@ def generate_all_products_html(rows, output_path=None):
   .cat-header .toggle {{ font-size:0.8rem; color:var(--muted); margin-left:6px; }}
   .cat-body {{ display:none; }}
   .cat-section.expanded .cat-body {{ display:block; }}
+  .done-label {{
+    display:inline-flex; align-items:center; gap:5px;
+    margin-left:auto; padding:3px 10px; border-radius:6px;
+    font-size:0.75rem; font-weight:500; cursor:pointer;
+    border:1px solid var(--border); color:var(--muted);
+    background:var(--card); transition:all 0.15s; user-select:none;
+  }}
+  .done-label:hover {{ border-color:var(--green); color:var(--green); }}
+  .done-label input {{ cursor:pointer; accent-color:var(--green); width:13px; height:13px; }}
+  .cat-section.done > .cat-header {{ opacity:0.55; }}
+  .cat-section.done > .cat-header .done-label {{
+    background:rgba(34,197,94,0.15); border-color:var(--green); color:var(--green);
+  }}
 </style>
 </head>
 <body>
@@ -1196,6 +1303,13 @@ def generate_all_products_html(rows, output_path=None):
       <button class="filter-btn" onclick="toggleGlobalMismatch(this)">Mismatches Only</button>
       <button class="filter-btn" onclick="expandAll()">Expand All</button>
       <button class="filter-btn" onclick="collapseAll()">Collapse All</button>
+    </div>
+    <div class="stat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span style="color:var(--muted);font-size:0.8rem;">Progress:</span>
+      <button class="filter-btn" onclick="exportProgress()" title="Download progress.json">&#8595; Export</button>
+      <label class="filter-btn" style="cursor:pointer;" title="Load progress.json">&#8593; Import<input type="file" accept=".json" style="display:none" onchange="importProgress(event)"></label>
+      <button class="filter-btn" onclick="clearProgress()" title="Uncheck all">&#10005; Clear all</button>
+      <span id="progress-count" style="color:var(--green);font-size:0.8rem;"></span>
     </div>
   </div>
 
@@ -1298,10 +1412,14 @@ def generate_all_products_html(rows, output_path=None):
                       if r.get(f"{col} [Status]") == "MISMATCH")
 
         html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(label)} <span class="cnt">{len(cat_rows)} products</span>'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')" style="display:flex;align-items:center;gap:8px;">'
+        html += f'      <span>{_esc(label)} <span class="cnt">{len(cat_rows)} products</span>'
         if cat_mis:
             html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mis} mismatches</span>'
-        html += ' <span class="toggle">&#9654; expand</span></div>\n'
+        html += f'</span>\n'
+        html += f'      <label class="done-label" onclick="event.stopPropagation()"><input type="checkbox" class="done-cb" onchange="toggleDone(this,\'{safe_id}\')"> Done</label>\n'
+        html += f'      <span class="toggle">&#9654; expand</span>\n'
+        html += f'    </div>\n'
         html += '    <div class="cat-body">\n'
         html += f'    <div class="search"><input type="text" placeholder="Search in {_esc(label)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
         html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button></div>\n'
@@ -1364,6 +1482,74 @@ function toggleGlobalMismatch(btn) {
     filterCat(section.querySelector('.search input'), section.id);
   });
 }
+
+// ── Progress checkboxes ──────────────────────────────────────────
+const LS_KEY = 'jma_progress_flat';
+
+function _loadProgress() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+}
+function _saveProgress(p) {
+  localStorage.setItem(LS_KEY, JSON.stringify(p));
+  _updateCount(p);
+}
+function _updateCount(p) {
+  const done = Object.values(p).filter(Boolean).length;
+  const total = document.querySelectorAll('.done-cb').length;
+  const el = document.getElementById('progress-count');
+  if (el) el.textContent = done ? `${done} / ${total} done` : '';
+}
+function _applyProgress(p) {
+  Object.entries(p).forEach(([id, checked]) => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const cb = sec.querySelector('.done-cb');
+    if (cb) cb.checked = checked;
+    sec.classList.toggle('done', !!checked);
+  });
+  _updateCount(p);
+}
+
+function toggleDone(cb, catId) {
+  const p = _loadProgress();
+  p[catId] = cb.checked;
+  document.getElementById(catId)?.classList.toggle('done', cb.checked);
+  _saveProgress(p);
+}
+
+function exportProgress() {
+  const p = _loadProgress();
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'progress.json';
+  a.click();
+}
+
+function importProgress(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const p = JSON.parse(ev.target.result);
+      _saveProgress(p);
+      _applyProgress(p);
+    } catch { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function clearProgress() {
+  if (!confirm('Uncheck all categories?')) return;
+  localStorage.removeItem(LS_KEY);
+  document.querySelectorAll('.done-cb').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.cat-section.done').forEach(s => s.classList.remove('done'));
+  _updateCount({});
+}
+
+document.addEventListener('DOMContentLoaded', () => _applyProgress(_loadProgress()));
 </script>
 </body>
 </html>"""
