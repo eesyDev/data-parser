@@ -1001,8 +1001,8 @@ _FLAT_COLUMNS = [
     ("Head Style",             "Head Style"),
     ("Bucket Size",            "Bucket Size"),
     ("Carrier Weight Class",   "Carrier Weight Class"),
-    ("Front Pin Diameter",     "Front Pin Diameter"),
     ("Pin Size",               "Pin Size"),
+    ("Front Pin Diameter",     "Front Pin Diameter"),
     ("Front Pin Length (mm)",  "Front Pin Length (mm)"),
     ("Rear Pin Diameter (mm)", "Rear Pin Diameter (mm)"),
     ("Rear Pin Length (mm)",   "Rear Pin Length (mm)"),
@@ -1229,6 +1229,11 @@ def generate_all_products_html(rows, output_path=None):
   td.done-check {{ width:28px; text-align:center; padding:0 4px; }}
   td.done-check input {{ cursor:pointer; accent-color:var(--green); width:14px; height:14px; }}
   tr.row-done td:not(.done-check) {{ opacity:0.38; text-decoration:line-through; }}
+  .cell-label {{ display:flex; align-items:center; gap:4px; cursor:pointer; white-space:normal; }}
+  .cell-cb {{ cursor:pointer; accent-color:var(--green); width:11px; height:11px; flex-shrink:0; }}
+  td.cell-done {{ background:rgba(74,222,128,0.15) !important; opacity:1 !important; }}
+  td.cell-done .cell-label {{ text-decoration:line-through; color:var(--green); }}
+  tr.row-done td.cell-done .cell-label {{ color:var(--green); }}
 </style>
 </head>
 <body>
@@ -1381,8 +1386,9 @@ def generate_all_products_html(rows, output_path=None):
                 for i, (suf, _, vcls) in enumerate(suf_list):
                     first_cls = " group-start" if i == 0 else ""
                     v = str(r.get(f"{col} {suf}", "") or "")
+                    col_key = f"{col} {suf}"
                     if v and v.lower() not in ("nan", "none"):
-                        t += f'            <td class="{ccls} {vcls}{first_cls}">{_esc(v)}</td>\n'
+                        t += f'            <td class="{ccls} {vcls}{first_cls}" data-sku="{_sku}" data-col="{_esc(col_key)}"><label class="cell-label"><input type="checkbox" class="cell-cb" data-sku="{_sku}" data-col="{_esc(col_key)}" onchange="toggleCell(this)">{_esc(v)}</label></td>\n'
                     else:
                         t += f'            <td class="{ccls} cell-empty{first_cls}">&mdash;</td>\n'
                 t += f'            <td class="{ccls} {scls}">{icon}</td>\n'
@@ -1470,7 +1476,7 @@ function toggleGlobalMismatch(btn) {
   });
 }
 
-// ── Progress checkboxes (per row / SKU) ─────────────────────────
+// ── Progress checkboxes (per row / SKU) + per-cell ───────────────
 const LS_KEY = 'jma_progress_flat';
 
 function _loadProgress() {
@@ -1481,16 +1487,28 @@ function _saveProgress(p) {
   _updateCount(p);
 }
 function _updateCount(p) {
-  const done = Object.keys(p).filter(k => p[k]).length;
-  const total = document.querySelectorAll('.done-cb[data-sku]').length;
+  const rows  = Object.keys(p).filter(k => p[k] && !k.includes('::')).length;
+  const cells = Object.keys(p).filter(k => p[k] &&  k.includes('::')).length;
   const el = document.getElementById('progress-count');
-  if (el) el.textContent = done ? `${done} / ${total} done` : '';
+  if (!el) return;
+  if (!rows && !cells) { el.textContent = ''; return; }
+  const parts = [];
+  if (rows)  parts.push(`${rows} rows`);
+  if (cells) parts.push(`${cells} cells`);
+  el.textContent = parts.join(', ') + ' done';
 }
 function _applyProgress(p) {
   document.querySelectorAll('.done-cb[data-sku]').forEach(cb => {
     if (p[cb.dataset.sku]) {
       cb.checked = true;
       cb.closest('tr').classList.add('row-done');
+    }
+  });
+  document.querySelectorAll('.cell-cb[data-col]').forEach(cb => {
+    const key = cb.dataset.sku + '::' + cb.dataset.col;
+    if (p[key]) {
+      cb.checked = true;
+      cb.closest('td').classList.add('cell-done');
     }
   });
   _updateCount(p);
@@ -1501,6 +1519,14 @@ function toggleRow(cb) {
   cb.closest('tr').classList.toggle('row-done', cb.checked);
   const p = _loadProgress();
   if (cb.checked) p[sku] = true; else delete p[sku];
+  _saveProgress(p);
+}
+
+function toggleCell(cb) {
+  const key = cb.dataset.sku + '::' + cb.dataset.col;
+  cb.closest('td').classList.toggle('cell-done', cb.checked);
+  const p = _loadProgress();
+  if (cb.checked) p[key] = true; else delete p[key];
   _saveProgress(p);
 }
 
@@ -1529,10 +1555,12 @@ function importProgress(e) {
 }
 
 function clearProgress() {
-  if (!confirm('Uncheck all products?')) return;
+  if (!confirm('Uncheck all?')) return;
   localStorage.removeItem(LS_KEY);
   document.querySelectorAll('.done-cb').forEach(cb => cb.checked = false);
   document.querySelectorAll('tr.row-done').forEach(tr => tr.classList.remove('row-done'));
+  document.querySelectorAll('.cell-cb').forEach(cb => cb.checked = false);
+  document.querySelectorAll('td.cell-done').forEach(td => td.classList.remove('cell-done'));
   _updateCount({});
 }
 
