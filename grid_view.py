@@ -16,6 +16,7 @@ import name_parser
 # "common" applies to most attachment categories.
 COMMON_ATTRS = [
     "Bucket Size",
+    "Front Pin Diameter",
     "Pin Size",
     "Front Pin Length (mm)",
     "Rear Pin Length (mm)",
@@ -93,6 +94,7 @@ NO_BUCKET_SIZE = {
 # Attributes that are NEVER in the product name (data-only from sources).
 # Don't flag as PARTIAL just because parsed-name value is missing.
 DATA_ONLY_ATTRS = {
+    "Front Pin Diameter",
     "Center to Center",
     "Drain Holes",
     "Product Weight (lbs)",
@@ -239,8 +241,8 @@ def build_grid():
             }
 
             for attr_name in all_attr_names:
-                # Value from parsed name
-                name_val = _find_parsed_value(parsed, attr_name)
+                # Value from parsed name (skip data-only attrs — never extracted from title)
+                name_val = "" if attr_name in DATA_ONLY_ATTRS else _find_parsed_value(parsed, attr_name)
 
                 # Value from Zoho attributes
                 zoho_val = _find_source_value(zoho_attrs.get(sku, {}), attr_name)
@@ -392,6 +394,8 @@ def _find_source_value(attrs, attr_name):
                         "Grapple Width (in)", "Grapple Size", "Grapple Width",
                         "Broom Width (in)", "Broom Size", "Brush Size",
                         "Compaction Width", "Fork Size", "Saw Length"],
+        "Front Pin Diameter": ["Front Pin Diameter (mm)", "Front Pin Diameter (mm)/Filter",
+                               "Pin Diameter (mm)", "Front Pin Size"],
         "Pin Size": ["Front Pin Diameter (mm)", "Front Pin Diameter",
                      "Pin Diameter (mm)", "Pin size", "Front Pin Size"],
         "Front Pin Diameter (mm)": ["Front Pin Diameter", "Pin Size",
@@ -458,6 +462,104 @@ def _all_match(values):
     return True
 
 
+_GRID_SUFFIXES = [
+    ("Name",   "sub-name",   "val-name"),
+    ("Zoho",   "sub-zoho",   "val-zoho"),
+    ("Web",    "sub-web",    "val-web"),
+    ("Google", "sub-google", "val-google"),
+]
+_GRID_SUB_LABELS = {"Name": "From Title", "Zoho": "Zoho", "Web": "Web", "Google": "Google"}
+
+
+def _render_grid_table(df_group, attr_names):
+    """Render grid-scroll + table HTML for one group. Hides sub-columns with no data."""
+    if df_group is None or len(df_group) == 0:
+        return ''
+
+    vcls = {s: vc for s, _, vc in _GRID_SUFFIXES}
+    scls = {s: sc for s, sc, _ in _GRID_SUFFIXES}
+
+    # Which sub-columns have any data per attr?
+    active_subs = {}
+    for attr in attr_names:
+        subs = []
+        for s, _, _ in _GRID_SUFFIXES:
+            col = f"{attr} [{s}]"
+            if col in df_group.columns:
+                if df_group[col].apply(
+                    lambda x: bool(str(x).strip()) and str(x).lower() not in ("", "nan", "none")
+                ).any():
+                    subs.append(s)
+        if subs:
+            active_subs[attr] = subs
+
+    t = '      <div class="grid-scroll">\n        <table>\n'
+
+    # Header row 1
+    t += '          <thead>\n          <tr>\n'
+    t += '            <th rowspan="2" class="sticky-col sticky-col-0">SKU</th>\n'
+    t += '            <th rowspan="2" class="sticky-col sticky-col-1">Zoho Title (website)</th>\n'
+    t += '            <th rowspan="2">Status</th>\n'
+    t += '            <th rowspan="2">Website Name</th>\n'
+    t += '            <th rowspan="2">Google Name</th>\n'
+    t += '            <th rowspan="2">In Web</th>\n'
+    t += '            <th rowspan="2">In Google</th>\n'
+    for attr in attr_names:
+        subs = active_subs.get(attr)
+        if not subs:
+            continue
+        t += f'            <th class="attr-group" colspan="{len(subs) + 1}">{_esc(attr)}</th>\n'
+    t += '          </tr>\n'
+
+    # Header row 2
+    t += '          <tr>\n'
+    for attr in attr_names:
+        subs = active_subs.get(attr)
+        if not subs:
+            continue
+        for s in subs:
+            t += f'            <th class="sub {scls[s]}">{_GRID_SUB_LABELS[s]}</th>\n'
+        t += '            <th class="sub">St</th>\n'
+    t += '          </tr>\n          </thead>\n'
+
+    # Body
+    t += '          <tbody>\n'
+    for _, row in df_group.iterrows():
+        has_mismatch = any(
+            str(row.get(f"{a} [Status]", "")) == "MISMATCH"
+            for a in attr_names if active_subs.get(a)
+        )
+        t += f'          <tr data-has-mismatch="{1 if has_mismatch else 0}">\n'
+        t += f'            <td class="sticky-col sticky-col-0"><strong>{_esc(str(row.get("SKU", "")))}</strong></td>\n'
+        t += f'            <td class="sticky-col sticky-col-1">{_esc(str(row.get("Zoho Title", "")))}</td>\n'
+        zoho_st = str(row.get("Zoho Status", ""))
+        t += f'            <td class="{"tag-no" if zoho_st.lower() == "inactive" else ""}">{_esc(zoho_st)}</td>\n'
+        t += f'            <td class="val-web">{_esc(str(row.get("Website Name", "")))}</td>\n'
+        t += f'            <td class="val-google">{_esc(str(row.get("Google Name", "")))}</td>\n'
+        in_web = str(row.get("In Website", ""))
+        in_google = str(row.get("In Google", ""))
+        t += f'            <td class="{"tag-yes" if in_web == "Yes" else "tag-no"}">{in_web}</td>\n'
+        t += f'            <td class="{"tag-yes" if in_google == "Yes" else "tag-no"}">{in_google}</td>\n'
+        for attr in attr_names:
+            subs = active_subs.get(attr)
+            if not subs:
+                continue
+            status = str(row.get(f"{attr} [Status]", "") or "")
+            cell_cls = {"MISMATCH": "cell-mismatch", "PARTIAL": "cell-partial", "OK": "cell-ok"}.get(status, "")
+            for s in subs:
+                v = str(row.get(f"{attr} [{s}]", "") or "")
+                if v and v.lower() not in ("nan", "none"):
+                    t += f'            <td class="{cell_cls} {vcls[s]}">{_esc(v)}</td>\n'
+                else:
+                    t += f'            <td class="{cell_cls} cell-empty">&mdash;</td>\n'
+            st_cls = {"OK": "tag-ok", "MISMATCH": "tag-mis", "PARTIAL": "tag-part"}.get(status, "cell-empty")
+            st_icon = {"OK": "&#10003;", "MISMATCH": "&#10007;", "PARTIAL": "~"}.get(status, "")
+            t += f'            <td class="{cell_cls} {st_cls}">{st_icon}</td>\n'
+        t += '          </tr>\n'
+    t += '          </tbody>\n        </table>\n      </div>\n'
+    return t
+
+
 def generate_grid_html(grids, output_path=None):
     """Generate HTML page with attribute grids grouped by category."""
     output_path = output_path or os.path.join(config.OUTPUT_DIR, "attribute_grid.html")
@@ -474,6 +576,40 @@ def generate_grid_html(grids, output_path=None):
                 total_partial += (g["data"][col] == "PARTIAL").sum()
 
     cat_list = sorted(grids.keys(), key=lambda c: -len(grids[c]["data"]))
+
+    # Pin-related attributes to hide in "without pins" groups
+    _PIN_ATTRS = {"Front Pin Diameter", "Pin Size", "Rear Pin Diameter (mm)",
+                  "Front Pin Length (mm)", "Rear Pin Length (mm)"}
+
+    def _row_has_fpd(row, fpd_cols):
+        for c in fpd_cols:
+            v = str(row.get(c, "") or "").strip()
+            if v and v.lower() not in ("nan", "none"):
+                return True
+        return False
+
+    display_cats = []
+    for _cat in cat_list:
+        _df = grids[_cat]["data"]
+        _an = grids[_cat]["attr_names"]
+        _fpd_cols = [f"Front Pin Diameter [{s}]" for s in ["Zoho", "Web", "Google"]]
+        _avail = [c for c in _fpd_cols if c in _df.columns]
+        if _avail:
+            _mask = _df.apply(lambda r: _row_has_fpd(r, _avail), axis=1)
+            _wp, _wop = _df[_mask], _df[~_mask]
+            if len(_wp) > 0 and len(_wop) > 0:
+                _sb = re.sub(r'[^a-zA-Z0-9]', '', _cat)
+                display_cats.append({"label": f"{_cat} with pins",
+                                     "safe_id": _sb + "withpins",
+                                     "df": _wp, "attr_names": _an})
+                display_cats.append({"label": f"{_cat} without pins",
+                                     "safe_id": _sb + "withoutpins",
+                                     "df": _wop,
+                                     "attr_names": [a for a in _an if a not in _PIN_ATTRS]})
+                continue
+        display_cats.append({"label": _cat,
+                             "safe_id": re.sub(r'[^a-zA-Z0-9]', '', _cat),
+                             "df": _df, "attr_names": _an})
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -624,7 +760,7 @@ def generate_grid_html(grids, output_path=None):
       <div class="label">Products</div>
     </div>
     <div class="stat">
-      <div class="num" style="color:var(--accent)">{len(cat_list)}</div>
+      <div class="num" style="color:var(--accent)">{len(display_cats)}</div>
       <div class="label">Categories</div>
     </div>
     <div class="stat">
@@ -645,117 +781,34 @@ def generate_grid_html(grids, output_path=None):
   <div class="cat-nav">
 """
 
-    for cat in cat_list:
-        cnt = len(grids[cat]["data"])
-        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
-        html += f'    <a class="cat-btn" href="#{safe_id}" onclick="expandCat(\'{safe_id}\')">{_esc(cat)}<span class="cnt">{cnt}</span></a>\n'
+    for dc in display_cats:
+        html += f'    <a class="cat-btn" href="#{dc["safe_id"]}" onclick="expandCat(\'{dc["safe_id"]}\')">{_esc(dc["label"])}<span class="cnt">{len(dc["df"])}</span></a>\n'
 
     html += '  </div>\n'
 
     # Category sections
-    for cat in cat_list:
-        grid = grids[cat]
-        df = grid["data"]
-        attr_names = grid["attr_names"]
-        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
+    for dc in display_cats:
+        label = dc["label"]
+        safe_id = dc["safe_id"]
+        df = dc["df"]
+        attr_names = dc["attr_names"]
 
-        # Count issues in this category
-        cat_mismatches = 0
-        for a in attr_names:
-            col = f"{a} [Status]"
-            if col in df.columns:
-                cat_mismatches += (df[col] == "MISMATCH").sum()
+        cat_mismatches = sum(
+            (df[f"{a} [Status]"] == "MISMATCH").sum()
+            for a in attr_names if f"{a} [Status]" in df.columns
+        )
 
         html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(cat)} <span class="cnt">{len(df)} products</span>'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(label)} <span class="cnt">{len(df)} products</span>'
         if cat_mismatches:
             html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mismatches} mismatches</span>'
         html += ' <span class="toggle">▶ expand</span></div>\n'
         html += '    <div class="cat-body">\n'
-        html += '    <div class="grid-wrap">\n'
-        html += f'      <div class="search"><input type="text" placeholder="Search in {_esc(cat)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
+        html += f'    <div class="search"><input type="text" placeholder="Search in {_esc(label)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
         html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button>'
         html += f'</div>\n'
-        html += '      <div class="grid-scroll">\n'
-        html += '        <table>\n'
-
-        # Header row 1: attribute group names
-        html += '          <thead>\n'
-        html += '          <tr>\n'
-        html += '            <th rowspan="2" class="sticky-col sticky-col-0">SKU</th>\n'
-        html += '            <th rowspan="2" class="sticky-col sticky-col-1">Zoho Title (website)</th>\n'
-        html += '            <th rowspan="2">Status</th>\n'
-        html += '            <th rowspan="2">Website Name</th>\n'
-        html += '            <th rowspan="2">Google Name</th>\n'
-        html += '            <th rowspan="2">In Web</th>\n'
-        html += '            <th rowspan="2">In Google</th>\n'
-
-        for attr in attr_names:
-            html += f'            <th class="attr-group" colspan="5">{_esc(attr)}</th>\n'
-
-        html += '          </tr>\n'
-
-        # Header row 2: sub-columns (Name, Zoho, Web, Google, Status)
-        html += '          <tr>\n'
-        for attr in attr_names:
-            html += '            <th class="sub sub-name">From Title</th>\n'
-            html += '            <th class="sub sub-zoho">Zoho</th>\n'
-            html += '            <th class="sub sub-web">Web</th>\n'
-            html += '            <th class="sub sub-google">Google</th>\n'
-            html += '            <th class="sub">St</th>\n'
-        html += '          </tr>\n'
-        html += '          </thead>\n'
-
-        # Data rows
-        html += '          <tbody>\n'
-        for _, row in df.iterrows():
-            has_mismatch = any(
-                str(row.get(f"{a} [Status]", "")) == "MISMATCH"
-                for a in attr_names
-            )
-            html += f'          <tr data-has-mismatch="{1 if has_mismatch else 0}">\n'
-            html += f'            <td class="sticky-col sticky-col-0"><strong>{_esc(str(row.get("SKU","")))}</strong></td>\n'
-            html += f'            <td class="sticky-col sticky-col-1">{_esc(str(row.get("Zoho Title","")))}</td>\n'
-            zoho_st = str(row.get("Zoho Status", ""))
-            st_color = "tag-no" if zoho_st.lower() == "inactive" else ""
-            html += f'            <td class="{st_color}">{_esc(zoho_st)}</td>\n'
-            html += f'            <td class="val-web">{_esc(str(row.get("Website Name","")))}</td>\n'
-            html += f'            <td class="val-google">{_esc(str(row.get("Google Name","")))}</td>\n'
-
-            in_web = str(row.get("In Website", ""))
-            in_google = str(row.get("In Google", ""))
-            html += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
-            html += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
-
-            for attr in attr_names:
-                name_v = str(row.get(f"{attr} [Name]", "") or "")
-                zoho_v = str(row.get(f"{attr} [Zoho]", "") or "")
-                web_v = str(row.get(f"{attr} [Web]", "") or "")
-                google_v = str(row.get(f"{attr} [Google]", "") or "")
-                status = str(row.get(f"{attr} [Status]", "") or "")
-
-                cell_cls = ""
-                if status == "MISMATCH":
-                    cell_cls = "cell-mismatch"
-                elif status == "PARTIAL":
-                    cell_cls = "cell-partial"
-                elif status == "OK":
-                    cell_cls = "cell-ok"
-
-                html += f'            <td class="{cell_cls} val-name">{_esc(name_v) or "&mdash;"}</td>\n'
-                html += f'            <td class="{cell_cls} val-zoho">{_esc(zoho_v) or "&mdash;"}</td>\n'
-                html += f'            <td class="{cell_cls} val-web">{_esc(web_v) or "&mdash;"}</td>\n'
-                html += f'            <td class="{cell_cls} val-google">{_esc(google_v) or "&mdash;"}</td>\n'
-
-                st_cls = {"OK": "tag-ok", "MISMATCH": "tag-mis", "PARTIAL": "tag-part"}.get(status, "cell-empty")
-                st_icon = {"OK": "&#10003;", "MISMATCH": "&#10007;", "PARTIAL": "~"}.get(status, "")
-                html += f'            <td class="{cell_cls} {st_cls}">{st_icon}</td>\n'
-
-            html += '          </tr>\n'
-
-        html += '          </tbody>\n'
-        html += '        </table>\n'
-        html += '      </div>\n'
+        html += '    <div class="grid-wrap">\n'
+        html += _render_grid_table(df, attr_names)
         html += '    </div>\n'
         html += '    </div>\n'
         html += '  </div>\n'
@@ -861,7 +914,7 @@ _FLAT_COLUMNS = [
     ("Head Style",             "Head Style"),
     ("Bucket Size",            "Bucket Size"),
     ("Carrier Weight Class",   "Carrier Weight Class"),
-    # "Front Pin Diameter (mm)" covered via alias in Pin Size
+    ("Front Pin Diameter",     "Front Pin Diameter"),
     ("Pin Size",               "Pin Size"),
     ("Front Pin Length (mm)",  "Front Pin Length (mm)"),
     ("Rear Pin Diameter (mm)", "Rear Pin Diameter (mm)"),
@@ -935,7 +988,8 @@ def build_all_products_flat():
         }
 
         for display_name, attr_key in _FLAT_COLUMNS:
-            nv = _find_parsed_value(parsed, attr_key)
+            data_only = display_name in DATA_ONLY_ATTRS or attr_key in DATA_ONLY_ATTRS
+            nv = "" if data_only else _find_parsed_value(parsed, attr_key)
             zv = _find_source_value(z_attrs, attr_key)
             wv = _find_source_value(w_attrs, attr_key)
             gv = _find_source_value(g_attrs, attr_key)
@@ -943,7 +997,8 @@ def build_all_products_flat():
             row[f"{display_name} [Zoho]"]   = zv
             row[f"{display_name} [Web]"]    = wv
             row[f"{display_name} [Google]"] = gv
-            vals = [v for v in [nv, zv, wv, gv] if v and str(v).strip() not in ("", "nan", "none")]
+            src_vals = [zv, wv, gv] if data_only else [nv, zv, wv, gv]
+            vals = [v for v in src_vals if v and str(v).strip() not in ("", "nan", "none")]
             if not vals:
                 st = ""
             elif len(vals) == 1:
@@ -1098,6 +1153,35 @@ def generate_all_products_html(rows, output_path=None):
         by_cat[r["Category"]].append(r)
     cat_list = sorted(by_cat.keys(), key=lambda c: -len(by_cat[c]))
 
+    _PIN_FLAT_NAMES = {"Front Pin Diameter", "Pin Size", "Rear Pin Diameter (mm)",
+                       "Front Pin Length (mm)", "Rear Pin Length (mm)"}
+    _FLAT_NO_PINS = [(col, key) for col, key in _FLAT_COLUMNS if col not in _PIN_FLAT_NAMES]
+
+    def _flat_r_has_fpd(r):
+        for suf in ["[Zoho]", "[Web]", "[Google]"]:
+            v = str(r.get(f"Front Pin Diameter {suf}", "") or "").strip()
+            if v and v.lower() not in ("nan", "none"):
+                return True
+        return False
+
+    display_cats_flat = []
+    for _cat in cat_list:
+        _rows = by_cat[_cat]
+        _wp = [r for r in _rows if _flat_r_has_fpd(r)]
+        _wop = [r for r in _rows if not _flat_r_has_fpd(r)]
+        if len(_wp) > 0 and len(_wop) > 0:
+            _sb = re.sub(r'[^a-zA-Z0-9]', '', _cat)
+            display_cats_flat.append({"label": f"{_cat} with pins",
+                                      "safe_id": _sb + "withpins",
+                                      "rows": _wp, "flat_cols": _FLAT_COLUMNS})
+            display_cats_flat.append({"label": f"{_cat} without pins",
+                                      "safe_id": _sb + "withoutpins",
+                                      "rows": _wop, "flat_cols": _FLAT_NO_PINS})
+        else:
+            display_cats_flat.append({"label": _cat,
+                                      "safe_id": re.sub(r'[^a-zA-Z0-9]', '', _cat),
+                                      "rows": _rows, "flat_cols": _FLAT_COLUMNS})
+
     total_mis = sum(
         1 for r in rows
         for col, _ in _FLAT_COLUMNS
@@ -1106,7 +1190,7 @@ def generate_all_products_html(rows, output_path=None):
 
     html += f"""  <div class="stats">
     <div class="stat"><div class="num" style="color:var(--accent)">{total}</div><div class="label">Active products</div></div>
-    <div class="stat"><div class="num" style="color:var(--accent)">{len(cat_list)}</div><div class="label">Categories</div></div>
+    <div class="stat"><div class="num" style="color:var(--accent)">{len(display_cats_flat)}</div><div class="label">Categories</div></div>
     <div class="stat"><div class="num" style="color:var(--red)">{total_mis}</div><div class="label">Mismatches</div></div>
     <div class="stat" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <button class="filter-btn" onclick="toggleGlobalMismatch(this)">Mismatches Only</button>
@@ -1117,10 +1201,8 @@ def generate_all_products_html(rows, output_path=None):
 
   <div class="cat-nav">
 """
-    for cat in cat_list:
-        cnt = len(by_cat[cat])
-        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
-        html += f'    <a class="cat-btn" href="#{safe_id}" onclick="expandCat(\'{safe_id}\')">{_esc(cat)}<span class="cnt">{cnt}</span></a>\n'
+    for dc in display_cats_flat:
+        html += f'    <a class="cat-btn" href="#{dc["safe_id"]}" onclick="expandCat(\'{dc["safe_id"]}\')">{_esc(dc["label"])}<span class="cnt">{len(dc["rows"])}</span></a>\n'
     html += '  </div>\n'
 
     SUFFIXES = [("[Name]", "sub-name", "val-name"),
@@ -1162,51 +1244,32 @@ def generate_all_products_html(rows, output_path=None):
         t += '          </tr>\n        </thead>\n'
         return t
 
-    for cat in cat_list:
-        cat_rows = by_cat[cat]
-        safe_id = re.sub(r'[^a-zA-Z0-9]', '', cat)
-
-        # Per-category: which suffixes have any data for each attr
-        active_map = {}
-        for col, _ in _FLAT_COLUMNS:
+    def _render_flat_table(rows_group, flat_cols):
+        grp_active_map = {}
+        for col, _ in flat_cols:
             active_suf = [(suf, sc, vc) for suf, sc, vc in SUFFIXES
-                          if _has_any(cat_rows, col, suf)]
+                          if _has_any(rows_group, col, suf)]
             if active_suf:
-                active_map[col] = active_suf
-
-        cat_mis = sum(1 for r in cat_rows for col in active_map
-                      if r.get(f"{col} [Status]") == "MISMATCH")
-
-        html += f'\n  <div class="cat-section" id="{safe_id}">\n'
-        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(cat)} <span class="cnt">{len(cat_rows)} products</span>'
-        if cat_mis:
-            html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mis} mismatches</span>'
-        html += ' <span class="toggle">&#9654; expand</span></div>\n'
-        html += '    <div class="cat-body">\n'
-        html += '    <div class="grid-wrap">\n'
-        html += f'      <div class="search"><input type="text" placeholder="Search in {_esc(cat)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
-        html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button></div>\n'
-        html += '      <div class="grid-scroll">\n'
-        html += '        <table>\n'
-        html += _thead_cat(active_map)
-        html += '          <tbody>\n'
-
-        for r in cat_rows:
+                grp_active_map[col] = active_suf
+        t = '      <div class="grid-scroll">\n        <table>\n'
+        t += _thead_cat(grp_active_map)
+        t += '          <tbody>\n'
+        for r in rows_group:
             in_web = r["In Web"]
             in_google = r["In Google"]
-            has_mis = any(r.get(f"{col} [Status]") == "MISMATCH" for col in active_map)
-            html += f'          <tr data-has-mismatch="{1 if has_mis else 0}">\n'
-            html += f'            <td class="sc sc0"><strong>{_esc(r["SKU"])}</strong></td>\n'
-            html += f'            <td class="sc sc1">{_esc(r["Zoho Title"])}</td>\n'
+            has_mis = any(r.get(f"{col} [Status]") == "MISMATCH" for col in grp_active_map)
+            t += f'          <tr data-has-mismatch="{1 if has_mis else 0}">\n'
+            t += f'            <td class="sc sc0"><strong>{_esc(r["SKU"])}</strong></td>\n'
+            t += f'            <td class="sc sc1">{_esc(r["Zoho Title"])}</td>\n'
             zoho_st = r["Status"]
             st_cls = "tag-inactive" if zoho_st.lower() == "inactive" else ""
-            html += f'            <td class="{st_cls}">{_esc(zoho_st)}</td>\n'
-            html += f'            <td class="val-web">{_esc(r["Website Name"])}</td>\n'
-            html += f'            <td class="val-google">{_esc(r["Google Name"])}</td>\n'
-            html += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
-            html += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
-            for col, _ in _FLAT_COLUMNS:
-                suf_list = active_map.get(col)
+            t += f'            <td class="{st_cls}">{_esc(zoho_st)}</td>\n'
+            t += f'            <td class="val-web">{_esc(r["Website Name"])}</td>\n'
+            t += f'            <td class="val-google">{_esc(r["Google Name"])}</td>\n'
+            t += f'            <td class="{"tag-yes" if in_web=="Yes" else "tag-no"}">{in_web}</td>\n'
+            t += f'            <td class="{"tag-yes" if in_google=="Yes" else "tag-no"}">{in_google}</td>\n'
+            for col, _ in flat_cols:
+                suf_list = grp_active_map.get(col)
                 if not suf_list:
                     continue
                 st = r.get(f"{col} [Status]", "")
@@ -1217,13 +1280,35 @@ def generate_all_products_html(rows, output_path=None):
                     first_cls = " group-start" if i == 0 else ""
                     v = str(r.get(f"{col} {suf}", "") or "")
                     if v and v.lower() not in ("nan", "none"):
-                        html += f'            <td class="{ccls} {vcls}{first_cls}">{_esc(v)}</td>\n'
+                        t += f'            <td class="{ccls} {vcls}{first_cls}">{_esc(v)}</td>\n'
                     else:
-                        html += f'            <td class="{ccls} cell-empty{first_cls}">&mdash;</td>\n'
-                html += f'            <td class="{ccls} {scls}">{icon}</td>\n'
-            html += '          </tr>\n'
+                        t += f'            <td class="{ccls} cell-empty{first_cls}">&mdash;</td>\n'
+                t += f'            <td class="{ccls} {scls}">{icon}</td>\n'
+            t += '          </tr>\n'
+        t += '          </tbody>\n        </table>\n      </div>\n'
+        return t
 
-        html += '          </tbody>\n        </table>\n      </div>\n    </div>\n    </div>\n  </div>\n'
+    for dc in display_cats_flat:
+        label = dc["label"]
+        safe_id = dc["safe_id"]
+        cat_rows = dc["rows"]
+        flat_cols = dc["flat_cols"]
+
+        cat_mis = sum(1 for r in cat_rows for col, _ in flat_cols
+                      if r.get(f"{col} [Status]") == "MISMATCH")
+
+        html += f'\n  <div class="cat-section" id="{safe_id}">\n'
+        html += f'    <div class="cat-header" onclick="toggleCat(\'{safe_id}\')">{_esc(label)} <span class="cnt">{len(cat_rows)} products</span>'
+        if cat_mis:
+            html += f' <span style="color:var(--red);font-size:0.8rem;">{cat_mis} mismatches</span>'
+        html += ' <span class="toggle">&#9654; expand</span></div>\n'
+        html += '    <div class="cat-body">\n'
+        html += f'    <div class="search"><input type="text" placeholder="Search in {_esc(label)}..." onkeyup="filterCat(this,\'{safe_id}\')">'
+        html += f' <button class="filter-btn" onclick="toggleMismatch(this,\'{safe_id}\')">Mismatch Only</button></div>\n'
+        html += '    <div class="grid-wrap">\n'
+        html += _render_flat_table(cat_rows, flat_cols)
+        html += '    </div>\n'
+        html += '    </div>\n  </div>\n'
 
     html += """
 </div>
