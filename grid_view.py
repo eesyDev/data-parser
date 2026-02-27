@@ -1337,7 +1337,7 @@ def generate_all_products_html(rows, output_path=None):
             suf_list = active_map.get(col, [])
             if not suf_list:
                 continue
-            t += f'            <th class="attr-group" colspan="{len(suf_list)+1}">{_esc(col)}</th>\n'
+            t += f'            <th class="attr-group" colspan="{len(suf_list)+2}">{_esc(col)}</th>\n'
         t += '          </tr>\n          <tr>\n'
         for col, _ in _FLAT_COLUMNS:
             suf_list = active_map.get(col, [])
