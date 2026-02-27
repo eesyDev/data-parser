@@ -1229,7 +1229,7 @@ def generate_all_products_html(rows, output_path=None):
   td.done-check {{ width:28px; text-align:center; padding:0 4px; }}
   td.done-check input {{ cursor:pointer; accent-color:var(--green); width:14px; height:14px; }}
   tr.row-done td:not(.done-check) {{ opacity:0.38; text-decoration:line-through; }}
-  .cell-label {{ display:flex; align-items:center; gap:4px; cursor:pointer; white-space:normal; }}
+  .cell-label {{ display:flex; align-items:center; gap:4px; cursor:pointer; }}
   .cell-cb {{ cursor:pointer; accent-color:var(--green); width:11px; height:11px; flex-shrink:0; }}
   td.cell-done {{ background:rgba(74,222,128,0.15) !important; opacity:1 !important; }}
   td.cell-done .cell-label {{ text-decoration:line-through; color:var(--green); }}
